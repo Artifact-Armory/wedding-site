@@ -1,6 +1,7 @@
 // Admin API. The middleware only lets this run for someone signed in with the admin password.
 import { getContent, getPasswords } from "../../_middleware.js";
 import GUESTS from "../../_guests.json";
+import { forward } from "../../_forward.js";
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
@@ -100,6 +101,15 @@ export async function onRequest({ request, env, params }) {
     } while (cursor && out.length < 1000);
     out.sort((a, b) => (a.receivedAt < b.receivedAt ? 1 : -1));
     return json(out);
+  }
+
+  if (what === "testsheet" && method === "POST") {
+    const reply = {
+      receivedAt: new Date().toISOString(), guestType: "Day", partyId: "test", partyNames: "Test from the website", onList: true,
+      rows: [{ name: "Test from the website", attending: "Yes", starter: "Test", main: "Test", dessert: "Test", wine: "Red", dietary: "", eveningOnly: false, meal: "Test" }],
+      message: "Connection test from the settings page. You can delete this row.", email: "",
+    };
+    return json(await forward(env, reply));
   }
 
   if (what === "photo" && method === "POST") {

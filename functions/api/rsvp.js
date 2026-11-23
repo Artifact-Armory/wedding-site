@@ -3,6 +3,7 @@
 // Replies go to the Google Sheet (via a small Google Apps Script) which also emails you.
 import GUESTS from "../_guests.json";
 import { getContent } from "../_middleware.js";
+import { forward } from "../_forward.js";
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
@@ -104,27 +105,13 @@ export async function onRequestPost({ request, env, data }) {
     email: clip(body.email, 120),
   };
 
-  // Keep a backup copy on Cloudflare too, if storage is switched on
+  const sent = await forward(env, reply);
+  if (!sent.ok) console.log("RSVP forward failed:", sent.error);
+  // Keep a backup copy on Cloudflare too, noting whether it reached the sheet
   if (env.SITE_KV) {
-    await env.SITE_KV.put(`rsvp:${reply.receivedAt}:${reply.partyId}`, JSON.stringify(reply));
-  }
-
-  if (!env.RSVP_WEBHOOK_URL || !env.RSVP_WEBHOOK_KEY) {
-    return json({ error: "RSVPs aren't switched on yet. Please try again later." }, 503);
-  }
-  try {
-    const res = await fetch(env.RSVP_WEBHOOK_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ key: env.RSVP_WEBHOOK_KEY, reply }),
-      redirect: "follow",
-    });
-    const out = await res.json().catch(() => ({}));
-    if (!res.ok || !out.ok) throw new Error(out.error || `status ${res.status}`);
-  } catch (e) {
-    console.log("RSVP forward failed", e.message);
-    if (!env.SITE_KV) return json({ error: "Sorry, we couldn't save that just now. Please try again in a minute." }, 502);
-    // saved in backup storage, so the guest doesn't need to retry
+    await env.SITE_KV.put(`rsvp:${reply.receivedAt}:${reply.partyId}`, JSON.stringify({ ...reply, sheet: sent.ok ? "sent" : sent.error }));
+  } else if (!sent.ok) {
+    return json({ error: "Sorry, we couldn't save that just now. Please try again in a minute." }, 502);
   }
   return json({ ok: true });
 }

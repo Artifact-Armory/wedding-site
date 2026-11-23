@@ -164,8 +164,9 @@ R_.passwords=()=>`<h2>Passwords</h2><p class="lead">Guests type these on the fro
 <p class="hint">The admin password is kept in the hosting settings. Ask Claude if you want to change it.</p>`;
 
 R_.replies=()=>`<h2>Replies</h2><p class="lead">The full list, with every detail, is in your Google Sheet. This is a backup copy kept on the website. ${R.length} replies so far.</p>
+<div class="item"><b>Google Sheet connection</b><p class="hint">Sends a test row to your sheet and a test email.</p><button class="btn" id="testsheet" style="margin-top:8px">Test sheet connection</button><p id="testres" class="hint" style="font-weight:700"></p></div>
 ${R.length?`<div class="scroll"><table><thead><tr><th>Received</th><th>Type</th><th>Guest</th><th>Coming</th><th>Meal</th><th>Wine</th><th>Dietary requirements</th></tr></thead><tbody>
-${R.flatMap(r=>r.rows.map((g,k)=>`<tr><td>${k?'':new Date(r.receivedAt).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'})}</td><td>${k?'':esc(r.guestType)}${!r.onList&&!k?' <span class="pill eve">not on list</span>':''}</td><td>${esc(g.name)}</td><td>${esc(g.attending)}</td><td>${esc(g.meal)}</td><td>${esc(g.wine||'')}</td><td>${esc(g.dietary)}</td></tr>`)).join('')}
+${R.flatMap(r=>r.rows.map((g,k)=>`<tr><td>${k?'':new Date(r.receivedAt).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'})}</td><td>${k?'':esc(r.guestType)}${!r.onList&&!k?' <span class="pill eve">not on list</span>':''}</td><td>${esc(g.name)}${!k&&r.sheet&&r.sheet!=='sent'?` <span class="pill eve" title="${esc(r.sheet)}">Not in sheet</span>`:''}</td><td>${esc(g.attending)}</td><td>${esc(g.meal)}</td><td>${esc(g.wine||'')}</td><td>${esc(g.dietary)}</td></tr>`)).join('')}
 </tbody></table></div>`:'<div class="item">No replies yet.</div>'}`;
 
 const render=()=>{$('#tabs').innerHTML=TABS.map(([k,l])=>`<button role="tab" aria-selected="${k===tab}" data-tab="${k}">${l}</button>`).join('');
@@ -214,6 +215,8 @@ $('#save').onclick=async()=>{const b=$('#save');b.disabled=true;$('#status').tex
  catch(x){$('#status').textContent=x.message;b.disabled=false}};
 document.addEventListener('click',async e=>{if(e.target.id!=='savepw')return;
  try{await api('passwords',{method:'PUT',body:JSON.stringify({day:$('#pwday').value,evening:$('#pweve').value})});PW={day:$('#pwday').value,evening:$('#pweve').value};toast('Passwords saved')}catch(x){toast(x.message)}});
+document.addEventListener('click',async e=>{if(e.target.id!=='testsheet')return;const o=$('#testres');o.textContent='Testing…';
+ try{const d=await api('testsheet',{method:'POST'});o.style.color=d.ok?'#1d7a3a':'#b0202a';o.textContent=d.ok?'It works. Check the sheet and your email for a test entry.':'Not working: '+d.error}catch(x){o.textContent=x.message}});
 window.addEventListener('beforeunload',e=>{if(dirty.size){e.preventDefault();e.returnValue=''}});
 
 const fill=()=>{C.photos=C.photos||{};C.photos.carousel=C.photos.carousel||[];C.rsvp=C.rsvp||{replyBy:''};C.rsvp.menu=C.rsvp.menu||{};['starters','mains','desserts'].forEach(k=>C.rsvp.menu[k]=C.rsvp.menu[k]||[]);C.rsvp.wines=C.rsvp.wines||[];C.countdownTo=C.countdownTo||{};C.story=C.story||{text:''};['timeline','details','travel','hotels'].forEach(k=>C[k]=C[k]||[])};
