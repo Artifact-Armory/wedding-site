@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Settings · Ellie &amp; Callum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..800,100&family=Yellowtail&display=swap" rel="stylesheet">
+<style>
+:root{--pink:#cc2d86;--red:#b0202a;--rose:#e86aa8;--blush:#f6d3e3;--ink:#5a1630;--soft:#fbeef4;--serif:"Fraunces",Georgia,serif;--script:"Yellowtail",cursive;color-scheme:light}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--soft);color:var(--ink);font:16px/1.5 var(--serif);font-variation-settings:"SOFT" 100}
+header{background:var(--pink);color:#fff;display:flex;align-items:center;gap:10px;padding:10px 14px;flex-wrap:wrap}
+header h1{font:400 30px var(--script);margin:0 auto 0 0}
+header a{color:#fff;font-weight:700;font-size:14px;text-decoration:none;background:rgba(255,255,255,.18);border-radius:999px;padding:8px 12px;min-height:40px;display:inline-flex;align-items:center}
+nav.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;background:#fff;border-bottom:2px solid var(--blush)}
+.top{position:sticky;top:0;z-index:5}
+@media(max-width:600px){header{gap:6px;padding:8px 10px}header h1{font-size:26px;width:100%}header a{font-size:13px;padding:6px 10px;min-height:36px}}
+nav.tabs button{flex:none;border:2px solid var(--blush);background:#fff;color:var(--ink);border-radius:999px;padding:8px 14px;font:700 15px var(--serif);min-height:42px;cursor:pointer}
+nav.tabs button[aria-selected=true]{background:var(--pink);border-color:var(--pink);color:#fff}
+main{max-width:860px;margin:0 auto;padding:18px 14px 120px}
+h2{font:400 40px var(--script);color:var(--red);margin:6px 0 4px}
+.lead{margin:0 0 16px;color:#8a3a5c}
+.item{background:#fff;border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:0 3px 0 rgba(90,22,48,.08)}
+.item .bar{display:flex;gap:6px;align-items:center;margin-bottom:10px}
+.item .bar b{margin-right:auto;color:var(--red);font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icon{border:2px solid var(--blush);background:#fff;border-radius:12px;min-width:40px;height:40px;font:700 16px var(--serif);color:var(--ink);cursor:pointer;padding:0 10px}
+.icon.del{color:var(--red)}
+.icon:hover{border-color:var(--pink)}
+label{display:block;font-weight:700;font-size:14px;color:var(--red);margin:10px 0 4px}
+input[type=text],input[type=password],input[type=datetime-local],textarea,select{width:100%;font:16px var(--serif);color:var(--ink);background:#fff;border:2px solid var(--blush);border-radius:12px;padding:10px 12px;min-height:44px}
+textarea{min-height:110px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--pink);box-shadow:0 0 0 3px rgba(204,45,134,.18)}
+.row{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
+.check{display:flex;gap:8px;align-items:center;font-weight:600;font-size:15px;color:var(--ink);margin:10px 0 0;min-height:32px}
+.check input{width:20px;height:20px;accent-color:var(--pink)}
+.add{width:100%;min-height:52px;border:2px dashed var(--rose);background:transparent;color:var(--red);border-radius:18px;font:700 16px var(--serif);cursor:pointer;margin:4px 0 18px}
+.add:hover{background:#fff}
+.hint{font-size:13px;color:#8a3a5c;margin:4px 0 0}
+.savebar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:2px solid var(--blush);padding:10px 14px;display:flex;gap:10px;align-items:center;justify-content:center;z-index:6}
+.savebar span{font-size:14px;color:#8a3a5c}
+.btn{border:0;border-radius:999px;background:var(--pink);color:#fff;font:700 17px var(--serif);min-height:50px;padding:0 28px;cursor:pointer;box-shadow:0 4px 0 var(--red)}
+.btn[disabled]{opacity:.5;cursor:default}
+.photos{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.ph{background:#fff;border-radius:16px;padding:8px;text-align:center}
+.ph img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:10px;background:var(--blush)}
+.ph small{display:block;font-weight:700;margin:6px 0}
+.ph .acts{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.file{position:relative;overflow:hidden;display:inline-flex}
+.file input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.sub{border-top:2px dashed var(--blush);margin-top:12px;padding-top:8px}
+.pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 8px;background:var(--blush);color:var(--red);margin-left:6px}
+.pill.eve{background:var(--red);color:#fff}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:16px;overflow:hidden;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--blush);vertical-align:top}
+th{background:var(--blush);color:var(--red)}
+.scroll{overflow-x:auto}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:999px;padding:10px 18px;font-weight:700;z-index:9;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.search{margin-bottom:12px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="top"><header>
+  <h1>Wedding settings</h1>
+  <a href="/?edit=1">&larr; Back to editing the page</a>
+  <a href="/" target="_blank" rel="noopener">View as day guest</a>
+  <a href="/?view=evening" target="_blank" rel="noopener">View as evening guest</a>
+  <a href="/logout">Sign out</a>
+</header>
+<nav class="tabs" role="tablist" id="tabs"></nav></div>
+<main id="main"><p>Loading…</p></main>
+<div class="savebar"><span id="status">No changes yet</span><button class="btn" id="save" disabled>Save changes</button></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+{
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+let C=null,G=null,PW=null,R=null,dirty=new Set(),tab='rsvp';
+const TABS=[['rsvp','Meals & RSVP'],['guests','Guest list'],['passwords','Passwords'],['replies','Replies']];
+const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200)};
+const mark=k=>{dirty.add(k);$('#save').disabled=false;$('#status').textContent='Unsaved changes'};
+const api=async(path,opt={})=>{const r=await fetch('/api/admin/'+path,{headers:{'Content-Type':'application/json'},...opt});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Something went wrong');return d};
+
+// ---------- small form helpers ----------
+const field=(lbl,val,attrs='',type='text')=>`<label>${lbl}</label><input type="${type}" value="${esc(val)}" ${attrs}>`;
+const area=(lbl,val,attrs='')=>`<label>${lbl}</label><textarea ${attrs}>${esc(val)}</textarea>`;
+const who=(v,attrs)=>`<label>Who sees this?</label><select ${attrs}><option value="" ${!v?'selected':''}>Everyone</option><option value="day" ${v==='day'?'selected':''}>Day guests only</option><option value="evening" ${v==='evening'?'selected':''}>Evening guests only</option></select>`;
+const bar=(title,list,i,extra='')=>`<div class="bar"><b>${esc(title)||'New'}</b>${extra}<button class="icon" data-act="up" data-list="${list}" data-i="${i}" aria-label="Move up">↑</button><button class="icon" data-act="down" data-list="${list}" data-i="${i}" aria-label="Move down">↓</button><button class="icon del" data-act="del" data-list="${list}" data-i="${i}">Remove</button></div>`;
+const whoPill=o=>o==='day'?'<span class="pill">Day only</span>':o==='evening'?'<span class="pill eve">Evening only</span>':'';
+
+// lists the move/remove buttons act on
+const lists={
+  timeline:()=>C.timeline, details:()=>C.details, travel:()=>C.travel, hotelgroups:()=>C.hotels,
+  carousel:()=>C.photos.carousel, meals:()=>C.rsvp.meals, guests:()=>G
+};
+const listKey=l=>l==='guests'?'guests':'content';
+
+// ---------- renderers ----------
+const R_={};
+R_.story=()=>`<h2>Story &amp; photos</h2><p class="lead">Leave a blank line between paragraphs. Put **stars** around words to make them bold.</p>
+<div class="item">${area('Our story',C.story.text,'data-k="story.text" style="min-height:220px"')}</div>
+<h2>Main photos</h2><p class="lead">Photos are resized automatically before upload.</p>
+<div class="photos">${[['heroLeft','Header, left'],['heroRight','Header, right'],['story','Our story'],['footer','Footer background']].map(([k,l])=>`<div class="ph"><img src="${esc(C.photos[k]||'')}" alt=""><small>${l}</small><div class="acts"><span class="file icon">Replace<input type="file" accept="image/*" data-photo="${k}"></span></div></div>`).join('')}</div>
+<h2>Photo carousel</h2>
+<div class="photos">${C.photos.carousel.map((s,i)=>`<div class="ph"><img src="${esc(s)}" alt=""><small>Photo ${i+1}</small><div class="acts"><button class="icon" data-act="up" data-list="carousel" data-i="${i}" aria-label="Move left">←</button><button class="icon" data-act="down" data-list="carousel" data-i="${i}" aria-label="Move right">→</button><button class="icon del" data-act="del" data-list="carousel" data-i="${i}">Remove</button></div></div>`).join('')}
+<div class="ph" style="display:grid;place-items:center;min-height:180px;border:2px dashed var(--rose)"><span class="file icon">+ Add photo<input type="file" accept="image/*" multiple data-photo="carousel"></span></div></div>`;
+
+R_.day=()=>`<h2>Order of the day</h2><p class="lead">Day guests see everything marked Everyone or Day. Evening guests only see Everyone or Evening.</p>
+${C.timeline.map((t,i)=>`<div class="item">${bar((t.time?t.time+' · ':'')+t.title,'timeline',i,whoPill(t.only))}
+<div class="row"><div>${field('Time',t.time,`data-k="timeline.${i}.time" placeholder="e.g. 7:30"`)}</div><div>${field('Title',t.title,`data-k="timeline.${i}.title"`)}</div></div>
+${field('Small line underneath',t.note,`data-k="timeline.${i}.note"`)}
+<div class="row"><div>${who(t.only,`data-k="timeline.${i}.only"`)}</div><div><label class="check"><input type="checkbox" ${t.eve?'checked':''} data-k="timeline.${i}.eve" data-bool> Evening colour dot</label></div></div></div>`).join('')}
+<button class="add" data-add="timeline">+ Add a time</button>
+<div class="item"><b>Countdown</b><div class="row"><div>${field('Day guests count down to',C.countdownTo.day,'data-k="countdownTo.day"')}</div><div>${field('Evening guests count down to',C.countdownTo.evening,'data-k="countdownTo.evening"')}</div></div><p class="hint">Format: 2027-09-18T13:00:00+01:00</p></div>`;
+
+const boxEditor=(list,title)=>`<h2>${title}</h2><p class="lead">Each box opens when a guest taps its title. Add a Google Maps place to show a directions button.</p>
+${C[list].map((d,i)=>`<div class="item">${bar(d.title,list,i,whoPill(d.only))}
+${field('Title',d.title,`data-k="${list}.${i}.title"`)}
+${area('Text',d.text,`data-k="${list}.${i}.text"`)}
+<div class="row"><div>${field('Google Maps place (optional)',d.map||'',`data-k="${list}.${i}.map" placeholder="e.g. Westenhanger station"`)}</div><div>${field('Button wording',d.mapLabel||'',`data-k="${list}.${i}.mapLabel" placeholder="Open in Google Maps"`)}</div></div>
+<details ${d.phones&&d.phones.length?'open':''}><summary class="hint" style="cursor:pointer;margin-top:10px">Phone numbers list (e.g. taxis)</summary>
+${(d.phones||[]).map((p,j)=>`<div class="row" style="align-items:end"><div>${field('Name',p.name,`data-k="${list}.${i}.phones.${j}.name"`)}</div><div>${field('Number',p.number,`data-k="${list}.${i}.phones.${j}.number"`)}</div><div style="flex:none"><button class="icon del" data-act="delphone" data-list="${list}" data-i="${i}" data-j="${j}">Remove</button></div></div>`).join('')}
+<button class="icon" style="margin-top:10px" data-act="addphone" data-list="${list}" data-i="${i}">+ Add number</button></details>
+${who(d.only,`data-k="${list}.${i}.only"`)}</div>`).join('')}
+<button class="add" data-add="${list}">+ Add a box</button>`;
+R_.details=()=>boxEditor('details','The finer details');
+R_.travel=()=>boxEditor('travel','Travel');
+
+R_.hotels=()=>`<h2>Hotels</h2><p class="lead">Each area is a box guests tap to open. The Google Maps search is what the directions link looks for.</p>
+${C.hotels.map((g,i)=>`<div class="item">${bar(g.area,'hotelgroups',i)}${field('Area name',g.area,`data-k="hotels.${i}.area"`)}
+${g.list.map((h,j)=>`<div class="sub"><div class="bar"><b>${esc(h.name)||'New hotel'}</b><button class="icon" data-act="hup" data-i="${i}" data-j="${j}" aria-label="Move up">↑</button><button class="icon" data-act="hdown" data-i="${i}" data-j="${j}" aria-label="Move down">↓</button><button class="icon del" data-act="hdel" data-i="${i}" data-j="${j}">Remove</button></div>
+<div class="row"><div>${field('Name',h.name,`data-k="hotels.${i}.list.${j}.name"`)}</div><div>${field('Distance',h.dist,`data-k="hotels.${i}.list.${j}.dist" placeholder="e.g. 4 mi"`)}</div></div>
+${field('Description',h.sub,`data-k="hotels.${i}.list.${j}.sub"`)}${field('Google Maps search',h.q,`data-k="hotels.${i}.list.${j}.q"`)}
+<div class="row"><label class="check"><input type="checkbox" ${h.rec?'checked':''} data-k="hotels.${i}.list.${j}.rec" data-bool> Castle recommended</label><label class="check"><input type="checkbox" ${h.deal?'checked':''} data-k="hotels.${i}.list.${j}.deal" data-bool> Discount for our guests</label></div></div>`).join('')}
+<button class="add" style="margin-top:12px" data-act="hadd" data-i="${i}">+ Add a hotel</button></div>`).join('')}
+<button class="add" data-add="hotels">+ Add an area</button>`;
+
+R_.rsvp=()=>`<h2>Meals &amp; RSVP</h2><p class="lead">Day guests choose one of these meals. Leave the list empty to show "Menu coming soon".</p>
+${C.rsvp.meals.map((m,i)=>`<div class="item"><div class="bar"><b>Meal ${i+1}</b><button class="icon" data-act="up" data-list="meals" data-i="${i}" aria-label="Move up">↑</button><button class="icon" data-act="down" data-list="meals" data-i="${i}" aria-label="Move down">↓</button><button class="icon del" data-act="del" data-list="meals" data-i="${i}">Remove</button></div><input type="text" value="${esc(m)}" data-k="rsvp.meals.${i}" placeholder="e.g. Roast chicken with lemon and thyme"></div>`).join('')}
+<button class="add" data-add="meals">+ Add a meal option</button>
+<div class="item">${field('Reply by (optional)',C.rsvp.replyBy,'data-k="rsvp.replyBy" placeholder="e.g. 1st June 2027"')}<p class="hint">Shown on the RSVP page.</p></div>`;
+
+let gq='';
+R_.guests=()=>{const shown=G.map((p,i)=>[p,i]).filter(([p])=>!gq||p.members.some(m=>m.name.toLowerCase().includes(gq)));
+return `<h2>Guest list</h2><p class="lead">Guests find their party by typing their name on the RSVP page. People with only a first name or nickname must type exactly that. ${G.filter(p=>p.type==='day').length} day parties, ${G.filter(p=>p.type==='evening').length} evening parties.</p>
+<input type="text" class="search" placeholder="Search names" value="${esc(gq)}" id="gsearch">
+${shown.map(([p,i])=>`<div class="item">${bar(p.members.map(m=>m.name).join(', '),'guests',i,p.type==='evening'?'<span class="pill eve">Evening</span>':'<span class="pill">Day</span>')}
+<label>Invited to</label><select data-g="${i}.type"><option value="day" ${p.type==='day'?'selected':''}>Day (and evening)</option><option value="evening" ${p.type==='evening'?'selected':''}>Evening only</option></select>
+${p.members.map((m,j)=>`<div class="row" style="align-items:end;margin-top:6px"><div>${field(j?'':'People in this party',m.name,`data-g="${i}.members.${j}.name"`)}</div><div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><label class="check"><input type="checkbox" ${m.plusOne?'checked':''} data-g="${i}.members.${j}.plusOne" data-bool> Plus one (guest types name)</label>${p.type==='day'?`<label class="check"><input type="checkbox" ${m.eveningOnly?'checked':''} data-g="${i}.members.${j}.eveningOnly" data-bool> Evening only</label>`:''}<button class="icon del" data-act="gdelm" data-i="${i}" data-j="${j}">Remove</button></div></div>`).join('')}
+<button class="icon" style="margin-top:10px" data-act="gaddm" data-i="${i}">+ Add person</button></div>`).join('')}
+<button class="add" data-add="guests">+ Add a party</button>`};
+
+R_.passwords=()=>`<h2>Passwords</h2><p class="lead">Guests type these on the front page. Capital letters and spaces don't matter. Changing a password doesn't sign out guests who are already in.</p>
+<div class="item">${field('Day guest password',PW.day,'id="pwday" autocomplete="off"')}${field('Evening guest password',PW.evening,'id="pweve" autocomplete="off"')}
+<button class="btn" style="margin-top:14px" id="savepw">Save passwords</button></div>
+<p class="hint">The admin password is kept in the hosting settings. Ask Claude if you want to change it.</p>`;
+
+R_.replies=()=>`<h2>Replies</h2><p class="lead">The full list, with every detail, is in your Google Sheet. This is a backup copy kept on the website. ${R.length} replies so far.</p>
+${R.length?`<div class="scroll"><table><thead><tr><th>Received</th><th>Type</th><th>Guest</th><th>Coming</th><th>Meal</th><th>Dietary requirements</th></tr></thead><tbody>
+${R.flatMap(r=>r.rows.map((g,k)=>`<tr><td>${k?'':new Date(r.receivedAt).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'})}</td><td>${k?'':esc(r.guestType)}${!r.onList&&!k?' <span class="pill eve">not on list</span>':''}</td><td>${esc(g.name)}</td><td>${esc(g.attending)}</td><td>${esc(g.meal)}</td><td>${esc(g.dietary)}</td></tr>`)).join('')}
+</tbody></table></div>`:'<div class="item">No replies yet.</div>'}`;
+
+const render=()=>{$('#tabs').innerHTML=TABS.map(([k,l])=>`<button role="tab" aria-selected="${k===tab}" data-tab="${k}">${l}</button>`).join('');
+ $('#main').innerHTML=R_[tab]();const s=$('#gsearch');if(s){s.oninput=()=>{gq=s.value.toLowerCase();const pos=s.selectionStart;render();const n=$('#gsearch');n.focus();n.setSelectionRange(pos,pos)}}};
+
+// ---------- editing ----------
+const setPath=(obj,path,val)=>{const ks=path.split('.');let o=obj;for(let i=0;i<ks.length-1;i++){o=o[ks[i]]}o[ks.at(-1)]=val};
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.dataset.k){let v=t.dataset.bool!==undefined?t.checked:t.value;if(t.tagName==='SELECT'&&t.dataset.k.endsWith('.only'))v=v||undefined;setPath(C,t.dataset.k,v);mark('content')}
+ if(t.dataset.g){const v=t.dataset.bool!==undefined?t.checked:t.value;setPath(G,t.dataset.g,v);mark('guests');if(t.tagName==='SELECT')render()}});
+document.addEventListener('change',e=>{if(e.target.dataset.k&&e.target.tagName==='SELECT')render()});
+
+const blank={timeline:{time:'',title:'',note:''},details:{title:'',text:''},travel:{title:'',text:''},hotels:{area:'',list:[]},meals:'',guests:{id:'',type:'day',members:[{name:''}]}};
+document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.tab){tab=b.dataset.tab;render();window.scrollTo(0,0);return}
+ if(b.dataset.add){const k=b.dataset.add;const v=JSON.parse(JSON.stringify(blank[k]));
+  if(k==='meals')C.rsvp.meals.push(v);else if(k==='guests'){G.push(v);gq=''}else C[k].push(v);
+  mark(listKey(k==='meals'?'meals':k));render();const items=document.querySelectorAll('.item');items[k==='timeline'?items.length-2:items.length-1]?.scrollIntoView({block:'center'});return}
+ const a=b.dataset.act;if(!a)return;const i=+b.dataset.i,j=+b.dataset.j;
+ if(a==='up'||a==='down'||a==='del'){const L=lists[b.dataset.list]();
+  if(a==='del'){if(!confirmDel(b))return;L.splice(i,1)}
+  else{const n=a==='up'?i-1:i+1;if(n<0||n>=L.length)return;[L[i],L[n]]=[L[n],L[i]]}
+  mark(listKey(b.dataset.list));render();return}
+ if(a==='addphone'){const d=C[b.dataset.list][i];(d.phones=d.phones||[]).push({name:'',number:''});mark('content');render();return}
+ if(a==='delphone'){C[b.dataset.list][i].phones.splice(j,1);mark('content');render();return}
+ if(a==='hadd'){C.hotels[i].list.push({name:'',sub:'',dist:'',q:''});mark('content');render();return}
+ if(a==='hdel'){if(!confirmDel(b))return;C.hotels[i].list.splice(j,1);mark('content');render();return}
+ if(a==='hup'||a==='hdown'){const L=C.hotels[i].list,n=a==='hup'?j-1:j+1;if(n<0||n>=L.length)return;[L[j],L[n]]=[L[n],L[j]];mark('content');render();return}
+ if(a==='gaddm'){G[i].members.push({name:''});mark('guests');render();return}
+ if(a==='gdelm'){G[i].members.splice(j,1);mark('guests');render();return}
+});
+// two taps to remove, so nothing disappears by accident
+const confirmDel=b=>{if(b.dataset.sure)return true;b.dataset.sure='1';b.textContent='Tap again';setTimeout(()=>{if(b.isConnected){delete b.dataset.sure;b.textContent='Remove'}},2500);return false};
+
+// photos: shrink in the browser, then upload
+const shrink=f=>new Promise((res,rej)=>{const img=new Image();img.onload=()=>{const m=1600,s=Math.min(1,m/Math.max(img.width,img.height));const c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);c.getContext('2d').drawImage(img,0,0,c.width,c.height);c.toBlob(b=>b?res(b):rej(new Error('Could not read that photo')),'image/jpeg',.84)};img.onerror=()=>rej(new Error('Could not read that photo'));img.src=URL.createObjectURL(f)});
+document.addEventListener('change',async e=>{const t=e.target;if(!t.dataset.photo||!t.files.length)return;
+ try{for(const f of t.files){toast('Uploading…');const blob=await shrink(f);const r=await fetch('/api/admin/photo',{method:'POST',headers:{'Content-Type':'image/jpeg'},body:blob});const d=await r.json();if(!r.ok)throw new Error(d.error);
+  if(t.dataset.photo==='carousel')C.photos.carousel.push(d.src);else C.photos[t.dataset.photo]=d.src}
+  mark('content');render();toast('Photo added. Press Save to publish it.')}catch(x){toast(x.message)}});
+
+$('#save').onclick=async()=>{const b=$('#save');b.disabled=true;$('#status').textContent='Saving…';
+ try{if(dirty.has('content')){const d=await api('content',{method:'PUT',body:JSON.stringify(C)});C=d.content;fill()}
+  if(dirty.has('guests')){const d=await api('guests',{method:'PUT',body:JSON.stringify(G)});G=d.guests}
+  dirty.clear();$('#status').textContent='Saved. It’s live on the site now.';render();toast('Saved')}
+ catch(x){$('#status').textContent=x.message;b.disabled=false}};
+document.addEventListener('click',async e=>{if(e.target.id!=='savepw')return;
+ try{await api('passwords',{method:'PUT',body:JSON.stringify({day:$('#pwday').value,evening:$('#pweve').value})});PW={day:$('#pwday').value,evening:$('#pweve').value};toast('Passwords saved')}catch(x){toast(x.message)}});
+window.addEventListener('beforeunload',e=>{if(dirty.size){e.preventDefault();e.returnValue=''}});
+
+const fill=()=>{C.photos=C.photos||{};C.photos.carousel=C.photos.carousel||[];C.rsvp=C.rsvp||{meals:[],replyBy:''};C.rsvp.meals=C.rsvp.meals||[];C.countdownTo=C.countdownTo||{};C.story=C.story||{text:''};['timeline','details','travel','hotels'].forEach(k=>C[k]=C[k]||[])};
+Promise.all([api('content'),api('guests'),api('passwords'),api('rsvps')]).then(([c,g,p,r])=>{C=c;G=g;PW=p;R=r;fill();render()}).catch(x=>{$('#main').innerHTML='<p>'+esc(x.message)+'</p>'});
+}
+</script>
+</body>
+</html>

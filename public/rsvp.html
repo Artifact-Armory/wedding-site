@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en-GB" data-role="day">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RSVP · Ellie &amp; Callum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..900,100,1&family=Yellowtail&display=swap" rel="stylesheet">
+<style>
+/*
+VOICE: warm, playful, a little retro. The invite, brought to life.
+IDEA: the invite's stacked wavy cards, one per section, on hot pink.
+PICTURE: two arched portraits framing the names, then a swipeable photo strip.
+COLOUR and TYPE: magenta #cc2d86, deep red #b0202a, rose #e86aa8, blush #f6d3e3, white. Fraunces (soft, wonky) for names and caps, Yellowtail for the script.
+LAYOUT: one column on phones; names flanked by photos above 760px; story photo left of text above 760px.
+*/
+:root{color-scheme:light;--pink:#cc2d86;--red:#b0202a;--rose:#e86aa8;--blush:#f6d3e3;--paper:#fff;--ink:#5a1630;
+--serif:"Fraunces",Georgia,serif;--script:"Yellowtail","Brush Script MT",cursive}
+:root[data-theme=dark],:root[data-theme=light]{color-scheme:light}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth;scroll-padding-top:64px}
+body{margin:0;background:var(--pink);color:var(--ink);font:17px/1.6 var(--serif);font-variation-settings:"SOFT" 100,"WONK" 0;overflow-x:clip}
+img{display:block;max-width:100%}
+h1,h2,h3{margin:0;font-weight:800;line-height:1.05;text-wrap:balance}
+.script{font-family:var(--script);font-weight:400;line-height:1.1}
+.caps{text-transform:uppercase;letter-spacing:.02em;font-weight:700}
+
+/* top bar */
+nav{position:sticky;top:0;z-index:5;background:var(--pink);display:flex;gap:4px;align-items:center;padding:8px 12px;box-shadow:0 1px 0 rgba(255,255,255,.25)}
+nav .links{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.burger{display:none;width:44px;height:44px;border:0;background:none;color:#fff;cursor:pointer;padding:10px;border-radius:12px}
+.burger:focus-visible{outline:2px solid #fff}
+.burger span{display:block;height:3px;background:currentColor;border-radius:3px;margin:5px 0;transition:transform .25s,opacity .25s}
+nav.open .burger span:nth-child(1){transform:translateY(8px) rotate(45deg)}
+nav.open .burger span:nth-child(2){opacity:0}
+nav.open .burger span:nth-child(3){transform:translateY(-8px) rotate(-45deg)}
+nav a{color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:8px 12px;border-radius:999px;min-height:40px;display:inline-flex;align-items:center}
+nav a:hover,nav a:focus-visible{background:rgba(255,255,255,.18);outline:none}
+nav .mono{font-family:var(--serif);font-weight:800;color:var(--blush);font-size:20px}
+@media(max-width:700px){
+ .burger{display:block}
+ nav .mono{margin:0 auto;padding-right:56px}
+ nav .links{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;background:var(--pink);padding:8px 16px 18px;box-shadow:0 12px 20px rgba(90,22,48,.25)}
+ nav.open .links{display:flex}
+ nav .links a{font-size:20px;min-height:48px;padding:8px 12px}
+}
+.rsvp-seg{max-width:560px;text-align:center;padding:clamp(44px,8vw,64px) 34px}
+.rsvp-seg .script{font-size:clamp(36px,8vw,48px);color:#fff}
+.rsvp-seg p{margin:6px 0 20px;color:#fff;font-size:16px}
+.rsvp-seg .btn{background:#fff;color:var(--pink);box-shadow:0 6px 0 var(--red);font-size:22px;min-height:60px;padding:0 48px}
+.rsvp-seg .btn:focus-visible{outline-color:#fff}
+
+/* wavy card: the invite's scalloped white panel */
+.card{position:relative;background:var(--paper);margin:0 auto;max-width:1080px;padding:clamp(40px,7vw,80px) clamp(22px,6vw,72px);
+}
+.band{padding:clamp(18px,4vw,40px) max(4vw,12px)}
+.card{border-radius:28px}
+.card{padding:clamp(52px,8vw,88px) clamp(34px,6vw,76px)}
+.card.blush{background:var(--blush)}
+.card.rose{background:var(--rose);color:#fff}
+.squiggle{display:block;width:120px;height:14px;margin:14px auto 0;color:var(--rose)}
+.head{text-align:center;margin-bottom:clamp(24px,4vw,40px)}
+.head .script{font-size:clamp(40px,8vw,60px);color:var(--red)}
+.rose .head .script{color:#fff}
+
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:clamp(16px,3vw,40px)}
+.arch{aspect-ratio:2/3;border-radius:999px 999px 24px 24px;overflow:hidden;border:6px solid var(--blush);box-shadow:0 10px 0 var(--rose)}
+.arch img{width:100%;height:100%;object-fit:cover}
+.arch.l{transform:rotate(-4deg)}.arch.r{transform:rotate(4deg)}
+.names{text-align:center}
+.names .script{font-size:clamp(26px,4vw,36px);color:var(--red)}
+.names h1{font-family:var(--serif);font-size:clamp(56px,10vw,112px);color:var(--red);text-transform:uppercase;font-variation-settings:"SOFT" 100,"WONK" 1;letter-spacing:-.01em;margin:6px 0}
+.names h1 .amp{display:block;font-size:.8em}
+.names .date{font-family:var(--script);font-size:clamp(30px,5vw,42px);color:var(--rose)}
+.names .where{margin-top:14px;color:var(--red);font-size:20px}
+.names .where small{display:block;color:var(--rose);font-size:16px;letter-spacing:.08em}
+.count{display:flex;gap:10px;justify-content:center;margin-top:22px}
+.count div{background:var(--pink);color:#fff;border-radius:16px;padding:8px 12px;min-width:68px;text-align:center}
+.count b{display:block;font-size:26px;line-height:1.1}.count span{font-size:13px}
+@media(max-width:760px){
+ .hero{grid-template-columns:1fr 1fr}
+ .names{grid-column:1/-1;order:-1}
+ .arch{max-width:220px;justify-self:center;width:100%}
+}
+
+/* carousel: photos glide across on a loop */
+.carousel{overflow:hidden;margin:0 calc(-1*max(4vw,12px));padding:6px 0 10px;-webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.track{display:flex;gap:16px;width:max-content;animation:glide 32s linear infinite}
+.carousel:hover .track,.carousel:active .track{animation-play-state:paused}
+.track figure{flex:none;width:min(72vw,320px);margin:0;aspect-ratio:1;border-radius:28px;overflow:hidden;border:6px solid #fff}
+.track img{width:100%;height:100%;object-fit:cover}
+@keyframes glide{to{transform:translateX(calc(-50% - 8px))}}
+@media(prefers-reduced-motion:reduce){.track{animation-duration:90s}}
+
+/* story */
+.story{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(24px,5vw,64px);align-items:center}
+.story .photo{aspect-ratio:3/4;border-radius:32px;overflow:hidden;transform:rotate(-2deg);box-shadow:12px 12px 0 var(--pink)}
+.story .photo img{width:100%;height:100%;object-fit:cover;object-position:50% 80%}
+.story .head{text-align:left;margin-bottom:12px}.story .squiggle{margin-left:0}
+.story p{margin:0 0 14px;max-width:60ch}
+.note{font-size:14px;color:var(--rose);font-style:italic}
+@media(max-width:760px){.story{grid-template-columns:1fr}.story .photo{max-width:340px;margin:0 auto}.story .head{text-align:center}.story .squiggle{margin-left:auto}}
+
+/* order of the day */
+.timeline{list-style:none;margin:0 auto;padding:0;max-width:620px}
+.timeline li{display:grid;grid-template-columns:78px 30px minmax(0,1fr);column-gap:14px;position:relative;padding:12px 0;
+ opacity:0;transform:translateX(-26px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.8,.3,1.2)}
+.timeline li:nth-child(even){transform:translateX(26px)}
+.timeline li.in{opacity:1;transform:none}
+.timeline .rail{position:relative;display:flex;justify-content:center}
+.timeline .rail::before{content:"";position:absolute;top:-12px;bottom:-12px;left:50%;width:3px;margin-left:-1.5px;background:repeating-linear-gradient(var(--rose) 0 10px,transparent 10px 18px)}
+.timeline li:first-child .rail::before{top:14px}.timeline li:last-child .rail::before{bottom:calc(100% - 14px)}
+.timeline .dot{position:relative;margin-top:4px;width:22px;height:22px;border-radius:50%;background:var(--pink);border:4px solid #fff;box-shadow:0 0 0 2px var(--pink);transform:scale(0);transition:transform .45s .25s cubic-bezier(.3,1.6,.5,1)}
+.timeline li.in .dot{transform:scale(1)}
+.timeline li.eve .dot{background:var(--red);box-shadow:0 0 0 2px var(--red)}
+.timeline time{font-weight:800;color:var(--red);text-align:right;white-space:nowrap;font-size:20px;line-height:1.5}
+.timeline b{display:block;font-size:20px;color:var(--ink);line-height:1.5}
+.timeline span{display:block;font-size:15px;color:#8a3a5c;line-height:1.4}
+@media(max-width:420px){.timeline li{grid-template-columns:58px 26px minmax(0,1fr);column-gap:10px}.timeline time,.timeline b{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.timeline li,.timeline .dot{opacity:1;transform:none;transition:none}}
+
+/* tap-to-open boxes (finer details, travel & stay) */
+.acc{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));align-items:start}
+details.box{background:#fff;color:var(--ink);border-radius:24px;overflow:hidden;box-shadow:0 5px 0 rgba(90,22,48,.18)}
+details.box summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 22px;min-height:64px;font:800 22px/1.2 var(--serif);color:var(--red)}
+details.box summary::-webkit-details-marker{display:none}
+details.box summary:focus-visible{outline:3px solid var(--red);outline-offset:-3px;border-radius:24px}
+details.box summary i{flex:none;width:34px;height:34px;border-radius:50%;background:var(--blush);position:relative;transition:transform .3s,background .3s}
+details.box summary i::before,details.box summary i::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:3px;margin:-1.5px 0 0 -7px;background:var(--pink);border-radius:2px}
+details.box summary i::after{transform:rotate(90deg);transition:transform .3s}
+details.box[open] summary i{background:var(--pink)}
+details.box[open] summary i::before,details.box[open] summary i::after{background:#fff}
+details.box[open] summary i::after{transform:rotate(0)}
+.box .body{padding:0 22px 20px;font-size:16px;animation:drop .35s ease}
+.box .body p{margin:0 0 10px}
+@keyframes drop{from{opacity:0;transform:translateY(-6px)}}
+.maplink{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 18px;border-radius:999px;background:var(--pink);color:#fff;font-weight:700;text-decoration:none;margin-top:4px}
+.maplink:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.maplink svg{width:18px;height:18px}
+a{color:var(--red);text-decoration-thickness:2px;text-underline-offset:3px}
+.hotel{border-top:2px dashed var(--blush);padding:14px 0}
+.hotel:first-child{border-top:0;padding-top:4px}
+.hotel .top{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.hotel b{font-size:17px;line-height:1.3}
+.hotel em{font-style:normal;font-weight:700;color:var(--pink);white-space:nowrap;font-size:15px}
+.hotel .sub{font-size:14px;color:#8a3a5c;margin:2px 0 6px}
+.hotel .tag{display:inline-block;font-size:13px;font-weight:700;background:var(--blush);color:var(--red);border-radius:999px;padding:2px 10px;margin:0 6px 6px 0}
+.hotel a.dir{font-size:15px;font-weight:700;display:inline-flex;align-items:center;min-height:36px}
+.taxis{list-style:none;padding:0;margin:6px 0 0;display:grid;gap:6px}
+.taxis li{display:flex;justify-content:space-between;gap:10px;border-bottom:2px dashed var(--blush);padding:6px 0}
+.taxis a{font-weight:700;white-space:nowrap}
+.disclaimer{margin:18px auto 0;max-width:60ch;text-align:center;font-size:14px;color:#fff;opacity:.9;font-style:italic}
+.stay-h{color:#fff;font-size:22px;margin:30px 0 12px}
+
+/* rsvp */
+.rsvp{text-align:center}
+.rsvp p{max-width:46ch;margin:0 auto 22px}
+.btn{display:inline-flex;align-items:center;min-height:52px;padding:0 30px;border-radius:999px;background:var(--pink);color:#fff;font:700 18px var(--serif);border:0;cursor:pointer;text-decoration:none;box-shadow:0 5px 0 var(--red)}
+.btn:hover{transform:translateY(-1px)}.btn:focus-visible{outline:3px solid var(--red);outline-offset:3px}
+.btn[disabled]{opacity:.65;cursor:not-allowed;transform:none}
+
+footer{position:relative;text-align:center;color:#fff;padding:clamp(70px,12vw,110px) 16px clamp(260px,42vw,420px);margin-top:20px;
+ background:linear-gradient(var(--pink),rgba(204,45,134,.35) 40%,rgba(204,45,134,0) 70%),url(img/beach.jpg) 58% 75%/cover no-repeat}
+footer .mono{font:800 44px var(--serif);color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.25)}
+footer .script{font-size:clamp(30px,6vw,44px);text-shadow:0 2px 12px rgba(0,0,0,.35)}
+
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .7s,transform .7s}
+.reveal.in{opacity:1;transform:none}
+@media(prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+</style>
+<style>
+.back{color:#fff;text-decoration:none;font-weight:700;display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border-radius:999px}
+.back:focus-visible{outline:2px solid #fff}
+nav.simple{justify-content:space-between}nav.simple .mono{margin:0;padding:0}
+.form{max-width:560px;margin:0 auto}
+label{display:block;font-weight:700;color:var(--red);margin:0 0 6px}
+input[type=text],select,textarea{width:100%;font:16px var(--serif);color:var(--ink);background:#fff;border:2px solid var(--blush);border-radius:14px;padding:12px 14px;min-height:48px}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--pink);box-shadow:0 0 0 3px rgba(204,45,134,.2)}
+textarea{min-height:84px;resize:vertical}
+.find{display:flex;gap:10px;align-items:stretch}.find input{flex:1}
+.find .btn{min-height:48px;padding:0 22px}
+.hint{font-size:14px;color:#8a3a5c;margin:8px 0 0}
+.guest{background:#fff;border-radius:22px;padding:20px;margin-top:16px;box-shadow:0 5px 0 rgba(90,22,48,.12)}
+.guest h3{font-size:22px;color:var(--ink);margin-bottom:12px}
+.choice{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+.choice input{position:absolute;opacity:0;pointer-events:none}
+.choice label{margin:0;display:flex;align-items:center;justify-content:center;min-height:48px;border-radius:999px;border:2px solid var(--blush);color:var(--ink);font-weight:700;cursor:pointer;text-align:center;padding:0 10px}
+.choice input:checked+label{background:var(--pink);border-color:var(--pink);color:#fff}
+.choice input:focus-visible+label{outline:3px solid var(--red);outline-offset:2px}
+.field{margin-bottom:14px}
+.guest.no .meal{display:none}
+.party{display:none}.party.show{display:block;animation:drop .4s ease}
+@keyframes drop{from{opacity:0;transform:translateY(-8px)}}
+.send{text-align:center;margin-top:24px}
+.done{display:none;text-align:center}.done.show{display:block}
+.pick{display:grid;gap:10px;margin-top:14px}
+.pick button{text-align:left;background:#fff;border:2px solid var(--blush);border-radius:18px;padding:14px 16px;font:16px var(--serif);color:var(--ink);cursor:pointer;min-height:48px}
+.pick button:hover,.pick button:focus-visible{border-color:var(--pink);outline:none}
+.pick b{color:var(--red)}
+.notfound{background:#fff;border-radius:18px;padding:16px;margin-top:14px;font-size:15px}
+.linkbtn{background:none;border:0;padding:0;font:700 15px var(--serif);color:var(--red);text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:44px}
+.addguest{background:none;border:2px dashed var(--rose);color:var(--red);border-radius:18px;width:100%;min-height:52px;font:700 16px var(--serif);margin-top:14px;cursor:pointer}
+.err{color:var(--red);background:#fff;border:2px solid var(--red);border-radius:14px;padding:10px 12px;font-size:15px}
+.guest input.pname{margin-bottom:12px}
+.guest .tagline{font-size:13px;font-weight:700;color:var(--rose);margin:-8px 0 10px}
+.btn[aria-busy=true]{opacity:.7;pointer-events:none}
+.sample{font-size:13px;color:var(--rose);font-style:italic;text-align:center;margin-top:8px}
+</style>
+</head>
+<body>
+<nav class="simple" aria-label="Site">
+  <a class="back" href="index.html">&larr; Back</a>
+  <a class="mono" href="index.html">E&amp;C</a>
+  <span style="width:80px"></span>
+</nav>
+<main>
+<section class="band">
+  <div class="card blush">
+    <div class="head"><h1 class="script" style="font-size:clamp(44px,9vw,64px);color:var(--red)">See you there?</h1>
+    <svg class="squiggle" viewBox="0 0 120 14" aria-hidden="true"><path d="M2 7q7-7 14 0t14 0 14 0 14 0 14 0 14 0 14 0 14 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></div>
+    <script id="rsvp-data" type="application/json">{"replyBy":"","meals":[]}</script>
+    <form class="form" id="form" novalidate>
+      <div id="step1">
+        <label for="name">Find your invitation</label>
+        <div class="find"><input type="text" id="name" placeholder="Your first and last name" autocomplete="name" enterkeyhint="search"><button class="btn" type="button" id="findBtn">Find</button></div>
+        <p class="hint" id="hint">Type your name as it appears on your invitation. You can then reply for everyone in your party.</p>
+        <p class="hint" id="replyBy" hidden></p>
+        <div id="results" aria-live="polite"></div>
+      </div>
+      <div class="party" id="party">
+        <div id="guests"></div>
+        <button type="button" class="addguest" id="addGuest" hidden>+ Add another person</button>
+        <div class="field" style="margin-top:18px"><label for="email">Your email (optional)</label><input type="email" id="email" placeholder="So we can send you any updates" autocomplete="email" style="width:100%;font:16px var(--serif);border:2px solid var(--blush);border-radius:14px;padding:12px 14px;min-height:48px"></div>
+        <div class="field"><label for="msg">A message for Ellie &amp; Callum (optional)</label><textarea id="msg" placeholder="Song requests welcome!"></textarea></div>
+        <p class="err" id="err" role="alert" hidden></p>
+        <div class="send"><button class="btn" type="submit" id="sendBtn">Send our RSVP</button></div>
+      </div>
+    </form>
+    <div class="done" id="done"><h2 class="script" style="font-size:44px;color:var(--red)">Thank you!</h2><p id="doneMsg">Your RSVP is in. We can't wait to celebrate with you.</p><p class="hint">Need to change something? Just send it again and we'll use your latest reply.</p><a class="btn" href="index.html">Back to the main page</a></div>
+  </div>
+</section>
+</main>
+<script>
+{
+const ROLE=document.documentElement.dataset.role||'day';
+const DATA=JSON.parse(document.getElementById('rsvp-data').textContent);
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+if(DATA.replyBy){$('replyBy').hidden=false;$('replyBy').innerHTML='Please reply by <b>'+esc(DATA.replyBy)+'</b>.'}
+let party=null; // null = guest typed their own names (not found on the list)
+const mealField=(i)=>{
+ if(ROLE!=='day')return'';
+ const opts=DATA.meals.length?'<option value="">Choose a meal</option>'+DATA.meals.map(m=>`<option>${esc(m)}</option>`).join(''):'<option value="">Menu coming soon</option>';
+ return `<div class="field"><label for="m${i}">Meal choice</label><select id="m${i}" ${DATA.meals.length?'':'disabled'}>${opts}</select></div>`};
+const guestBox=(m,i)=>`<div class="guest" data-i="${i}">
+ ${m.plusOne||m.custom?`<label for="p${i}">${m.plusOne?esc(m.name):'Name'}</label><input type="text" class="pname" id="p${i}" placeholder="Their full name" autocomplete="off">`:`<h3>${esc(m.name)}</h3>`}
+ ${m.eveningOnly?'<p class="tagline">Invited for the evening</p>':''}
+ <div class="choice" role="radiogroup" aria-label="Can ${esc(m.name)} come?">
+ <input type="radio" name="a${i}" id="y${i}" value="yes"><label for="y${i}">Joyfully accepts</label>
+ <input type="radio" name="a${i}" id="n${i}" value="no"><label for="n${i}">Sadly declines</label></div>
+ <div class="meal" hidden>${m.eveningOnly?'':mealField(i)}
+ <div class="field"><label for="d${i}">Dietary requirements</label><textarea id="d${i}" placeholder="Allergies, vegetarian, vegan, gluten free... or leave blank"></textarea></div></div></div>`;
+const wire=()=>$('guests').querySelectorAll('input[type=radio]').forEach(r=>r.onchange=()=>{const g=r.closest('.guest');g.querySelector('.meal').hidden=!(g.querySelector('input[value=yes]').checked)});
+const showParty=(p)=>{party=p;const ms=p?p.members:[{name:'',custom:true}];
+ $('guests').innerHTML=ms.map(guestBox).join('');$('addGuest').hidden=!!p;wire();
+ $('party').classList.add('show');$('results').innerHTML='';$('step1').querySelector('.find').style.display=p?'none':'';$('hint').hidden=true;$('step1').querySelector('label[for=name]').style.display=p?'none':'';$('err').hidden=true;
+ if(p)$('results').innerHTML=`<p class="hint">Not you? <button type="button" class="linkbtn" id="restart">Search again</button></p>`;
+ const r=$('restart');if(r)r.onclick=()=>location.reload();
+ $('guests').querySelector('input,button')?.focus()};
+$('addGuest').onclick=()=>{const n=$('guests').children.length;$('guests').insertAdjacentHTML('beforeend',guestBox({name:'',custom:true},n));wire()};
+const find=async()=>{const q=$('name').value.trim();const b=$('findBtn');if(q.length<2)return;
+ b.setAttribute('aria-busy','true');b.textContent='Finding';
+ try{const r=await fetch('/api/rsvp?name='+encodeURIComponent(q),{headers:{Accept:'application/json'}});const d=await r.json();
+  if(d.parties.length===1)showParty(d.parties[0]);
+  else if(d.parties.length>1)$('results').innerHTML='<div class="pick"><p class="hint">Which one is you?</p>'+d.parties.map((p,i)=>`<button type="button" data-i="${i}"><b>${esc(p.members.filter(m=>!m.plusOne).map(m=>m.name).join(', '))}</b></button>`).join('')+'</div>',$('results').querySelectorAll('button').forEach(x=>x.onclick=()=>showParty(d.parties[x.dataset.i]));
+  else{$('results').innerHTML=`<div class="notfound">We couldn't find that name. Try your full name as it's written on your invitation.<br><button type="button" class="linkbtn" id="anyway">Still can't find it? Reply anyway</button></div>`;$('anyway').onclick=()=>showParty(null)}
+ }catch(e){$('results').innerHTML='<div class="notfound">Something went wrong. Please check your connection and try again.</div>'}
+ b.removeAttribute('aria-busy');b.textContent='Find'};
+$('findBtn').onclick=find;
+$('name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();find()}});
+$('form').addEventListener('submit',async e=>{e.preventDefault();const err=$('err');err.hidden=true;
+ const boxes=[...$('guests').children];const responses=[];
+ for(const g of boxes){const i=+g.dataset.i;const m=party?party.members[i]:null;
+  const yes=g.querySelector('input[value=yes]').checked,no=g.querySelector('input[value=no]').checked;
+  const typed=g.querySelector('.pname')?.value.trim()||'';
+  const label=m&&!m.plusOne?m.name:(typed||'this person');
+  if(!m&&!typed){err.textContent='Please add a name for everyone you are replying for.';err.hidden=false;return}
+  if(m&&m.plusOne&&yes&&!typed){err.textContent='Please add your plus one\'s name.';err.hidden=false;return}
+  if(!yes&&!no){if(m&&m.plusOne)continue;err.textContent=`Please say whether ${label} can come.`;err.hidden=false;return}
+  const meal=g.querySelector('select')?.value||'';
+  if(yes&&ROLE==='day'&&DATA.meals.length&&!(m&&m.eveningOnly)&&!meal){err.textContent=`Please choose a meal for ${label}.`;err.hidden=false;return}
+  responses.push({index:i,name:typed,plusOneName:typed,attending:yes?'yes':'no',meal,dietary:g.querySelector('textarea').value})}
+ const b=$('sendBtn');b.setAttribute('aria-busy','true');b.textContent='Sending';
+ try{const r=await fetch('/api/rsvp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({partyId:party?.id||null,responses,message:$('msg').value,email:$('email').value})});
+  const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||'Sorry, that didn\'t send. Please try again.');
+  const anyYes=responses.some(x=>x.attending==='yes');
+  $('doneMsg').textContent=anyYes?'Your RSVP is in. We can\'t wait to celebrate with you!':'Thank you for letting us know. We\'ll miss you!';
+  $('form').style.display='none';$('done').classList.add('show');window.scrollTo({top:0,behavior:'smooth'});
+ }catch(x){err.textContent=x.message;err.hidden=false}
+ b.removeAttribute('aria-busy');b.textContent='Send our RSVP'});
+// wavy edges (same as main page)
+const waveSVG=(W,H)=>{const a=9,d=20,r=22,K=.5523,f=v=>v.toFixed(1),R0=r+a;
+ const side=(len,fn)=>{const L=len-2*r,n=Math.max(2,Math.round(L/110)),k=Math.max(24,Math.round(L/4)),o=[];for(let s=0;s<=k;s++){const t=s/k;o.push(fn(r+t*L,a*Math.cos(2*Math.PI*n*t)))}return o};
+ const w=W-2*d,hh=H-2*d;
+ const T=side(w,(x,o)=>[d+x,d-o]),Rt=side(hh,(y,o)=>[W-d+o,d+y]),B=side(w,(x,o)=>[W-d-x,H-d+o]),L=side(hh,(y,o)=>[d-o,H-d-y]);
+ const seg=p=>p.map(q=>'L'+f(q[0])+' '+f(q[1])).join('');
+ // round lobe at each corner: quarter circle centred r in from the corner
+ const arc=(cx,cy,sx,sy,ex,ey)=>{const c1=[sx+(sx===cx?0:0),sy],p0=[sx,sy];const t0=[ (sx-cx), (sy-cy)],t1=[(ex-cx),(ey-cy)];
+  return 'C'+f(sx+K*t1[0])+' '+f(sy+K*t1[1])+' '+f(ex+K*t0[0])+' '+f(ey+K*t0[1])+' '+f(ex)+' '+f(ey)};
+ const path='M'+f(T[0][0])+' '+f(T[0][1])+seg(T)
+  +arc(W-d-r,d+r,T.at(-1)[0],T.at(-1)[1],Rt[0][0],Rt[0][1])+seg(Rt)
+  +arc(W-d-r,H-d-r,Rt.at(-1)[0],Rt.at(-1)[1],B[0][0],B[0][1])+seg(B)
+  +arc(d+r,H-d-r,B.at(-1)[0],B.at(-1)[1],L[0][0],L[0][1])+seg(L)
+  +arc(d+r,d+r,L.at(-1)[0],L.at(-1)[1],T[0][0],T[0][1])+'Z';
+ return `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='${W}' height='${H}' viewBox='0 0 ${W} ${H}'><path d='${path}'/></svg>`)}")`};
+const shape=c=>{const W=c.offsetWidth,H=c.offsetHeight;if(!W||!H)return;const m=waveSVG(W,H);c.style.borderRadius='0';c.style.webkitMaskImage=m;c.style.maskImage=m;c.style.webkitMaskSize=c.style.maskSize='100% 100%'};
+const wro=new ResizeObserver(es=>es.forEach(e=>shape(e.target)));
+document.querySelectorAll('.card').forEach(c=>wro.observe(c));
+}
+</script>
+</body>
+</html>
