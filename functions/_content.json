@@ -271,7 +271,7 @@
         {
           "name": "Pumpkin and sage gnocchi",
           "desc": "Roasted pumpkin, pine nuts and parmesan",
-          "tags": "VG"
+          "tags": "V"
         }
       ],
       "desserts": [
@@ -283,7 +283,7 @@
         {
           "name": "Apple and blackberry oat crumble",
           "desc": "Vanilla ice cream",
-          "tags": "VG"
+          "tags": "V, VG available"
         }
       ]
     },
