@@ -49,7 +49,13 @@ export async function getPasswords(env) {
 export async function getContent(env) {
   if (env.SITE_KV) {
     const saved = await env.SITE_KV.get("content", "json");
-    if (saved && typeof saved === "object") return { ...DEFAULT_CONTENT, ...saved };
+    if (saved && typeof saved === "object") {
+      const rsvp = { ...DEFAULT_CONTENT.rsvp, ...(saved.rsvp || {}) };
+      if (!rsvp.menu || !["starters", "mains", "desserts"].some((k) => rsvp.menu[k]?.length)) rsvp.menu = DEFAULT_CONTENT.rsvp.menu;
+      if (!Array.isArray(rsvp.wines) || !rsvp.wines.length) rsvp.wines = DEFAULT_CONTENT.rsvp.wines;
+      delete rsvp.meals;
+      return { ...DEFAULT_CONTENT, ...saved, rsvp };
+    }
   }
   return DEFAULT_CONTENT;
 }
@@ -62,7 +68,8 @@ export function forRole(content, role) {
     : v;
   const out = clean(content);
   if (out.countdownTo) out.countdownTo = { [role]: out.countdownTo[role] || out.countdownTo.day };
-  if (role !== "day" && out.rsvp) out.rsvp = { ...out.rsvp, meals: [] };
+  // Evening guests don't choose food or wine
+  if (role !== "day" && out.rsvp) out.rsvp = { ...out.rsvp, menu: { starters: [], mains: [], desserts: [] }, wines: [] };
   return out;
 }
 
@@ -133,7 +140,7 @@ export async function onRequest(context) {
     .on("html", { element: (el) => el.setAttribute("data-role", editing ? "edit" : view) })
     .on("[data-only]", { element: (el) => { if (el.getAttribute("data-only") !== view) el.remove(); } })
     .on("script#site-data", inject(content))
-    .on("script#rsvp-data", inject(content.rsvp || { meals: [], replyBy: "" }));
+    .on("script#rsvp-data", inject(content.rsvp || { menu: {}, wines: [], replyBy: "" }));
   if (editing) {
     rw = rw.on("body", { element: (el) => el.append(`<script src="/edit.js" defer></script>`, { html: true }) });
   } else if (role === "admin") {

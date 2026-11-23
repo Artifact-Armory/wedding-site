@@ -81,7 +81,7 @@ th{background:var(--blush);color:var(--red)}
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 let C=null,G=null,PW=null,R=null,dirty=new Set(),tab='rsvp';
-const TABS=[['rsvp','Meals & RSVP'],['guests','Guest list'],['passwords','Passwords'],['replies','Replies']];
+const TABS=[['rsvp','Menu & RSVP'],['guests','Guest list'],['passwords','Passwords'],['replies','Replies']];
 const toast=t=>{const e=$('#toast');e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),2200)};
 const mark=k=>{dirty.add(k);$('#save').disabled=false;$('#status').textContent='Unsaved changes'};
 const api=async(path,opt={})=>{const r=await fetch('/api/admin/'+path,{headers:{'Content-Type':'application/json'},...opt});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||'Something went wrong');return d};
@@ -96,7 +96,7 @@ const whoPill=o=>o==='day'?'<span class="pill">Day only</span>':o==='evening'?'<
 // lists the move/remove buttons act on
 const lists={
   timeline:()=>C.timeline, details:()=>C.details, travel:()=>C.travel, hotelgroups:()=>C.hotels,
-  carousel:()=>C.photos.carousel, meals:()=>C.rsvp.meals, guests:()=>G
+  carousel:()=>C.photos.carousel, starters:()=>C.rsvp.menu.starters, mains:()=>C.rsvp.menu.mains, desserts:()=>C.rsvp.menu.desserts, wines:()=>C.rsvp.wines, guests:()=>G
 };
 const listKey=l=>l==='guests'?'guests':'content';
 
@@ -140,10 +140,13 @@ ${field('Description',h.sub,`data-k="hotels.${i}.list.${j}.sub"`)}${field('Googl
 <button class="add" style="margin-top:12px" data-act="hadd" data-i="${i}">+ Add a hotel</button></div>`).join('')}
 <button class="add" data-add="hotels">+ Add an area</button>`;
 
-R_.rsvp=()=>`<h2>Meals &amp; RSVP</h2><p class="lead">Day guests choose one of these meals. Leave the list empty to show "Menu coming soon".</p>
-${C.rsvp.meals.map((m,i)=>`<div class="item"><div class="bar"><b>Meal ${i+1}</b><button class="icon" data-act="up" data-list="meals" data-i="${i}" aria-label="Move up">↑</button><button class="icon" data-act="down" data-list="meals" data-i="${i}" aria-label="Move down">↓</button><button class="icon del" data-act="del" data-list="meals" data-i="${i}">Remove</button></div><input type="text" value="${esc(m)}" data-k="rsvp.meals.${i}" placeholder="e.g. Roast chicken with lemon and thyme"></div>`).join('')}
-<button class="add" data-add="meals">+ Add a meal option</button>
-<div class="item">${field('Reply by (optional)',C.rsvp.replyBy,'data-k="rsvp.replyBy" placeholder="e.g. 1st June 2027"')}<p class="hint">Shown on the RSVP page.</p></div>`;
+const COURSE_LBL={starters:'Starter',mains:'Main',desserts:'Dessert'};
+R_.rsvp=()=>`<h2>Menu</h2><p class="lead">Day guests choose one dish from each course. Leave a course empty to hide it. Labels are things like V, VG or GF.</p>
+${Object.keys(COURSE_LBL).map(k=>`<h2 style="font-size:22px">${COURSE_LBL[k]}s</h2>${C.rsvp.menu[k].map((d,i)=>`<div class="item">${bar(d.name||COURSE_LBL[k]+' '+(i+1),k,i)}${field('Dish',d.name,`data-k="rsvp.menu.${k}.${i}.name"`)}${field('Description',d.desc||'',`data-k="rsvp.menu.${k}.${i}.desc"`)}${field('Labels (optional)',d.tags||'',`data-k="rsvp.menu.${k}.${i}.tags" placeholder="e.g. V, VG"`)}</div>`).join('')}<button class="add" data-add="${k}">+ Add a ${COURSE_LBL[k].toLowerCase()}</button>`).join('')}
+<h2>Wine preference</h2><p class="lead">Day guests can tick as many as they like. Options starting "I don't" untick the wines.</p>
+${C.rsvp.wines.map((w,i)=>`<div class="item">${bar(w||'Option '+(i+1),'wines',i)}<input type="text" value="${esc(w)}" data-k="rsvp.wines.${i}"></div>`).join('')}
+<button class="add" data-add="wines">+ Add a wine option</button>
+<h2>Reply by</h2><div class="item">${field('Reply by (optional)',C.rsvp.replyBy,'data-k="rsvp.replyBy" placeholder="e.g. 1st June 2027"')}<p class="hint">Shown on the RSVP page.</p></div>`;
 
 let gq='';
 R_.guests=()=>{const shown=G.map((p,i)=>[p,i]).filter(([p])=>!gq||p.members.some(m=>m.name.toLowerCase().includes(gq)));
@@ -161,8 +164,8 @@ R_.passwords=()=>`<h2>Passwords</h2><p class="lead">Guests type these on the fro
 <p class="hint">The admin password is kept in the hosting settings. Ask Claude if you want to change it.</p>`;
 
 R_.replies=()=>`<h2>Replies</h2><p class="lead">The full list, with every detail, is in your Google Sheet. This is a backup copy kept on the website. ${R.length} replies so far.</p>
-${R.length?`<div class="scroll"><table><thead><tr><th>Received</th><th>Type</th><th>Guest</th><th>Coming</th><th>Meal</th><th>Dietary requirements</th></tr></thead><tbody>
-${R.flatMap(r=>r.rows.map((g,k)=>`<tr><td>${k?'':new Date(r.receivedAt).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'})}</td><td>${k?'':esc(r.guestType)}${!r.onList&&!k?' <span class="pill eve">not on list</span>':''}</td><td>${esc(g.name)}</td><td>${esc(g.attending)}</td><td>${esc(g.meal)}</td><td>${esc(g.dietary)}</td></tr>`)).join('')}
+${R.length?`<div class="scroll"><table><thead><tr><th>Received</th><th>Type</th><th>Guest</th><th>Coming</th><th>Meal</th><th>Wine</th><th>Dietary requirements</th></tr></thead><tbody>
+${R.flatMap(r=>r.rows.map((g,k)=>`<tr><td>${k?'':new Date(r.receivedAt).toLocaleString('en-GB',{dateStyle:'medium',timeStyle:'short'})}</td><td>${k?'':esc(r.guestType)}${!r.onList&&!k?' <span class="pill eve">not on list</span>':''}</td><td>${esc(g.name)}</td><td>${esc(g.attending)}</td><td>${esc(g.meal)}</td><td>${esc(g.wine||'')}</td><td>${esc(g.dietary)}</td></tr>`)).join('')}
 </tbody></table></div>`:'<div class="item">No replies yet.</div>'}`;
 
 const render=()=>{$('#tabs').innerHTML=TABS.map(([k,l])=>`<button role="tab" aria-selected="${k===tab}" data-tab="${k}">${l}</button>`).join('');
@@ -175,12 +178,12 @@ document.addEventListener('input',e=>{const t=e.target;
  if(t.dataset.g){const v=t.dataset.bool!==undefined?t.checked:t.value;setPath(G,t.dataset.g,v);mark('guests');if(t.tagName==='SELECT')render()}});
 document.addEventListener('change',e=>{if(e.target.dataset.k&&e.target.tagName==='SELECT')render()});
 
-const blank={timeline:{time:'',title:'',note:''},details:{title:'',text:''},travel:{title:'',text:''},hotels:{area:'',list:[]},meals:'',guests:{id:'',type:'day',members:[{name:''}]}};
+const blank={timeline:{time:'',title:'',note:''},details:{title:'',text:''},travel:{title:'',text:''},hotels:{area:'',list:[]},starters:{name:'',desc:''},mains:{name:'',desc:''},desserts:{name:'',desc:''},wines:'',guests:{id:'',type:'day',members:[{name:''}]}};
 document.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;
  if(b.dataset.tab){tab=b.dataset.tab;render();window.scrollTo(0,0);return}
  if(b.dataset.add){const k=b.dataset.add;const v=JSON.parse(JSON.stringify(blank[k]));
-  if(k==='meals')C.rsvp.meals.push(v);else if(k==='guests'){G.push(v);gq=''}else C[k].push(v);
-  mark(listKey(k==='meals'?'meals':k));render();const items=document.querySelectorAll('.item');items[k==='timeline'?items.length-2:items.length-1]?.scrollIntoView({block:'center'});return}
+  if(COURSE_LBL[k])C.rsvp.menu[k].push(v);else if(k==='wines')C.rsvp.wines.push(v);else if(k==='guests'){G.push(v);gq=''}else C[k].push(v);
+  mark(listKey(k));render();const items=document.querySelectorAll('.item');items[k==='timeline'?items.length-2:items.length-1]?.scrollIntoView({block:'center'});return}
  const a=b.dataset.act;if(!a)return;const i=+b.dataset.i,j=+b.dataset.j;
  if(a==='up'||a==='down'||a==='del'){const L=lists[b.dataset.list]();
   if(a==='del'){if(!confirmDel(b))return;L.splice(i,1)}
@@ -213,7 +216,7 @@ document.addEventListener('click',async e=>{if(e.target.id!=='savepw')return;
  try{await api('passwords',{method:'PUT',body:JSON.stringify({day:$('#pwday').value,evening:$('#pweve').value})});PW={day:$('#pwday').value,evening:$('#pweve').value};toast('Passwords saved')}catch(x){toast(x.message)}});
 window.addEventListener('beforeunload',e=>{if(dirty.size){e.preventDefault();e.returnValue=''}});
 
-const fill=()=>{C.photos=C.photos||{};C.photos.carousel=C.photos.carousel||[];C.rsvp=C.rsvp||{meals:[],replyBy:''};C.rsvp.meals=C.rsvp.meals||[];C.countdownTo=C.countdownTo||{};C.story=C.story||{text:''};['timeline','details','travel','hotels'].forEach(k=>C[k]=C[k]||[])};
+const fill=()=>{C.photos=C.photos||{};C.photos.carousel=C.photos.carousel||[];C.rsvp=C.rsvp||{replyBy:''};C.rsvp.menu=C.rsvp.menu||{};['starters','mains','desserts'].forEach(k=>C.rsvp.menu[k]=C.rsvp.menu[k]||[]);C.rsvp.wines=C.rsvp.wines||[];C.countdownTo=C.countdownTo||{};C.story=C.story||{text:''};['timeline','details','travel','hotels'].forEach(k=>C[k]=C[k]||[])};
 Promise.all([api('content'),api('guests'),api('passwords'),api('rsvps')]).then(([c,g,p,r])=>{C=c;G=g;PW=p;R=r;fill();render()}).catch(x=>{$('#main').innerHTML='<p>'+esc(x.message)+'</p>'});
 }
 </script>

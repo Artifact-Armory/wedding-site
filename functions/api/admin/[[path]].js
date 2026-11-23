@@ -31,7 +31,12 @@ function cleanContent(c) {
       area: str(g.area, 60),
       list: (g.list || []).slice(0, 30).map((h) => tidyObj({ name: str(h.name, 100), sub: str(h.sub, 160), dist: str(h.dist, 20), q: str(h.q, 200), rec: h.rec ? true : undefined, deal: h.deal ? true : undefined })),
     })),
-    rsvp: { meals: (c.rsvp?.meals || []).map((m) => str(m, 80).trim()).filter(Boolean).slice(0, 12), replyBy: str(c.rsvp?.replyBy, 60) },
+    rsvp: {
+      menu: Object.fromEntries(["starters", "mains", "desserts"].map((k) => [k, (c.rsvp?.menu?.[k] || []).slice(0, 10)
+        .map((d) => tidyObj({ name: str(d.name, 80).trim(), desc: str(d.desc, 200).trim(), tags: str(d.tags, 20).trim() })).filter((d) => d.name)])),
+      wines: (c.rsvp?.wines || []).map((w) => str(w, 40).trim()).filter(Boolean).slice(0, 10),
+      replyBy: str(c.rsvp?.replyBy, 60),
+    },
   };
 }
 

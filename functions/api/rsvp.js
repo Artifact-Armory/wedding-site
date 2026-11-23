@@ -2,6 +2,7 @@
 // Day guests only ever see day parties, evening guests only evening parties.
 // Replies go to the Google Sheet (via a small Google Apps Script) which also emails you.
 import GUESTS from "../_guests.json";
+import { getContent } from "../_middleware.js";
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
@@ -61,36 +62,43 @@ export async function onRequestPost({ request, env, data }) {
 
   const list = (await guestList(env)).filter((p) => p.type === role);
   const party = body.partyId ? list.find((p) => p.id === body.partyId) : null;
+  // Only guests on the list can reply. Anyone else is told to email us.
+  if (!party) return json({ error: "We couldn't find your invitation. Please email us at eandcwedding27@gmail.com." }, 400);
+  const { menu = {}, wines = [] } = (await getContent(env)).rsvp || {};
+  const pick = (v, options) => { const x = clip(v, 80); return options.some((o) => o.name === x) ? x : ""; };
   const responses = Array.isArray(body.responses) ? body.responses.slice(0, 12) : [];
   if (!responses.length) return json({ error: "Please tell us who is coming." }, 400);
 
   const rows = [];
   for (const r of responses) {
-    let name = clip(r.name, 80);
-    if (party) {
-      const m = party.members[r.index];
-      if (!m) continue;
-      name = m.plusOne ? clip(r.plusOneName, 80) || m.name : m.name;
-    } else if (!name) continue; // guest wasn't on the list: they typed names themselves
+    const m = party.members[r.index];
+    if (!m) continue;
+    const name = m.plusOne ? clip(r.plusOneName, 80) || m.name : m.name;
     const attending = r.attending === "yes" ? "Yes" : r.attending === "no" ? "No" : "";
     if (!attending) return json({ error: `Please say whether ${name} can come.` }, 400);
-    const eveningOnly = party ? !!party.members[r.index]?.eveningOnly : false;
-    rows.push({
-      name,
-      attending,
-      meal: role === "day" && attending === "Yes" && !eveningOnly ? clip(r.meal, 80) : "",
+    const eveningOnly = !!m.eveningOnly;
+    const eats = role === "day" && attending === "Yes" && !eveningOnly;
+    const row = {
+      name, attending,
+      starter: eats ? pick(r.starter, menu.starters || []) : "",
+      main: eats ? pick(r.main, menu.mains || []) : "",
+      dessert: eats ? pick(r.dessert, menu.desserts || []) : "",
+      wine: eats && Array.isArray(r.wine) ? r.wine.map((w) => clip(w, 40)).filter((w) => wines.includes(w)).join(", ") : "",
       dietary: attending === "Yes" ? clip(r.dietary, 300) : "",
       eveningOnly,
-    });
+    };
+    // one-line summary, kept for the older sheet script
+    row.meal = [row.starter, row.main, row.dessert].filter(Boolean).join(" / ");
+    rows.push(row);
   }
   if (!rows.length) return json({ error: "Please tell us who is coming." }, 400);
 
   const reply = {
     receivedAt: new Date().toISOString(),
     guestType: role === "day" ? "Day" : "Evening",
-    partyId: party?.id || "not on list",
-    partyNames: party ? party.members.map((m) => m.name).join(" / ") : rows.map((r) => r.name).join(" / "),
-    onList: !!party,
+    partyId: party.id,
+    partyNames: party.members.map((m) => m.name).join(" / "),
+    onList: true,
     rows,
     message: clip(body.message, 1000),
     email: clip(body.email, 120),

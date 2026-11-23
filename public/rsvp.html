@@ -207,6 +207,24 @@ textarea{min-height:84px;resize:vertical}
 .guest .tagline{font-size:13px;font-weight:700;color:var(--rose);margin:-8px 0 10px}
 .btn[aria-busy=true]{opacity:.7;pointer-events:none}
 .sample{font-size:13px;color:var(--rose);font-style:italic;text-align:center;margin-top:8px}
+fieldset{border:0;margin:0 0 16px;padding:0;min-width:0}
+legend{font-weight:700;color:var(--red);margin:0 0 6px;padding:0}
+.opts{display:grid;gap:8px}
+.opt{position:relative}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt label{margin:0;display:block;border:2px solid var(--blush);border-radius:16px;padding:10px 14px 10px 44px;color:var(--ink);font-weight:400;cursor:pointer;position:relative;line-height:1.35}
+.opt label::before{content:"";position:absolute;left:14px;top:13px;width:18px;height:18px;border-radius:50%;border:2px solid var(--rose);background:#fff}
+.opt input[type=checkbox]+label::before{border-radius:6px}
+.opt input:checked+label{border-color:var(--pink);background:#fdf0f6}
+.opt input:checked+label::before{background:var(--pink);border-color:var(--pink);box-shadow:inset 0 0 0 3px #fff}
+.opt input:focus-visible+label{outline:3px solid var(--red);outline-offset:2px}
+.opt b{display:block;color:var(--ink);font-size:16px}
+.opt small{display:block;font-size:14px;color:#8a3a5c}
+.opt .diet{display:inline-block;font-size:12px;font-weight:700;background:var(--blush);color:var(--red);border-radius:999px;padding:0 8px;margin-left:6px;vertical-align:2px}
+.wines{display:flex;flex-wrap:wrap;gap:8px}
+.wines .opt label{padding:10px 16px 10px 44px;min-height:44px;font-weight:700}
+.wines .opt label::before{top:12px}
+.soon{font-size:15px;color:#8a3a5c;font-style:italic;margin:0 0 14px}
 </style>
 </head>
 <body>
@@ -220,7 +238,7 @@ textarea{min-height:84px;resize:vertical}
   <div class="card blush">
     <div class="head"><h1 class="script" style="font-size:clamp(44px,9vw,64px);color:var(--red)">See you there?</h1>
     <svg class="squiggle" viewBox="0 0 120 14" aria-hidden="true"><path d="M2 7q7-7 14 0t14 0 14 0 14 0 14 0 14 0 14 0 14 0" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg></div>
-    <script id="rsvp-data" type="application/json">{"replyBy":"","meals":[]}</script>
+    <script id="rsvp-data" type="application/json">{"replyBy":"","menu":{},"wines":[]}</script>
     <form class="form" id="form" novalidate>
       <div id="step1">
         <label for="name">Find your invitation</label>
@@ -231,8 +249,7 @@ textarea{min-height:84px;resize:vertical}
       </div>
       <div class="party" id="party">
         <div id="guests"></div>
-        <button type="button" class="addguest" id="addGuest" hidden>+ Add another person</button>
-        <div class="field" style="margin-top:18px"><label for="email">Your email (optional)</label><input type="email" id="email" placeholder="So we can send you any updates" autocomplete="email" style="width:100%;font:16px var(--serif);border:2px solid var(--blush);border-radius:14px;padding:12px 14px;min-height:48px"></div>
+                <div class="field" style="margin-top:18px"><label for="email">Your email (optional)</label><input type="email" id="email" placeholder="So we can send you any updates" autocomplete="email" style="width:100%;font:16px var(--serif);border:2px solid var(--blush);border-radius:14px;padding:12px 14px;min-height:48px"></div>
         <div class="field"><label for="msg">A message for Ellie &amp; Callum (optional)</label><textarea id="msg" placeholder="Song requests welcome!"></textarea></div>
         <p class="err" id="err" role="alert" hidden></p>
         <div class="send"><button class="btn" type="submit" id="sendBtn">Send our RSVP</button></div>
@@ -250,50 +267,60 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 if(DATA.replyBy){$('replyBy').hidden=false;$('replyBy').innerHTML='Please reply by <b>'+esc(DATA.replyBy)+'</b>.'}
 let party=null; // null = guest typed their own names (not found on the list)
+const MENU=DATA.menu||{},WINES=DATA.wines||[];
+const COURSES=[['starters','starter','Starter'],['mains','main','Main'],['desserts','dessert','Dessert']].filter(([k])=>(MENU[k]||[]).length);
+const isNoDrink=w=>/^i don.t/i.test(w);
 const mealField=(i)=>{
  if(ROLE!=='day')return'';
- const opts=DATA.meals.length?'<option value="">Choose a meal</option>'+DATA.meals.map(m=>`<option>${esc(m)}</option>`).join(''):'<option value="">Menu coming soon</option>';
- return `<div class="field"><label for="m${i}">Meal choice</label><select id="m${i}" ${DATA.meals.length?'':'disabled'}>${opts}</select></div>`};
+ const food=COURSES.length?COURSES.map(([k,key,label])=>`<fieldset><legend>${label}</legend><div class="opts">${MENU[k].map((d,j)=>`<div class="opt"><input type="radio" name="${key}${i}" id="${key}${i}_${j}" value="${esc(d.name)}"><label for="${key}${i}_${j}"><b>${esc(d.name)}${d.tags?`<span class="diet">${esc(d.tags)}</span>`:''}</b>${d.desc?`<small>${esc(d.desc)}</small>`:''}</label></div>`).join('')}</div></fieldset>`).join(''):'<p class="soon">Menu coming soon.</p>';
+ const wine=WINES.length?`<fieldset><legend>Wine preference <small style="font-weight:400;color:#8a3a5c">(choose as many as you like)</small></legend><div class="wines">${WINES.map((w,j)=>`<div class="opt"><input type="checkbox" name="w${i}" id="w${i}_${j}" value="${esc(w)}"><label for="w${i}_${j}">${esc(w)}</label></div>`).join('')}</div></fieldset>`:'';
+ return food+wine};
 const guestBox=(m,i)=>`<div class="guest" data-i="${i}">
- ${m.plusOne||m.custom?`<label for="p${i}">${m.plusOne?esc(m.name):'Name'}</label><input type="text" class="pname" id="p${i}" placeholder="Their full name" autocomplete="off">`:`<h3>${esc(m.name)}</h3>`}
+ ${m.plusOne?`<label for="p${i}">${esc(m.name)}</label><input type="text" class="pname" id="p${i}" placeholder="Their full name" autocomplete="off">`:`<h3>${esc(m.name)}</h3>`}
  ${m.eveningOnly?'<p class="tagline">Invited for the evening</p>':''}
  <div class="choice" role="radiogroup" aria-label="Can ${esc(m.name)} come?">
  <input type="radio" name="a${i}" id="y${i}" value="yes"><label for="y${i}">Joyfully accepts</label>
  <input type="radio" name="a${i}" id="n${i}" value="no"><label for="n${i}">Sadly declines</label></div>
  <div class="meal" hidden>${m.eveningOnly?'':mealField(i)}
  <div class="field"><label for="d${i}">Dietary requirements</label><textarea id="d${i}" placeholder="Allergies, vegetarian, vegan, gluten free... or leave blank"></textarea></div></div></div>`;
-const wire=()=>$('guests').querySelectorAll('input[type=radio]').forEach(r=>r.onchange=()=>{const g=r.closest('.guest');g.querySelector('.meal').hidden=!(g.querySelector('input[value=yes]').checked)});
-const showParty=(p)=>{party=p;const ms=p?p.members:[{name:'',custom:true}];
- $('guests').innerHTML=ms.map(guestBox).join('');$('addGuest').hidden=!!p;wire();
+const wire=()=>{$('guests').querySelectorAll('.choice input[type=radio]').forEach(r=>r.onchange=()=>{const g=r.closest('.guest');g.querySelector('.meal').hidden=!(g.querySelector('input[value=yes]').checked)});
+ // "I don't drink" choices untick the wines, and the other way round
+ $('guests').querySelectorAll('.wines input').forEach(c=>c.onchange=()=>{if(!c.checked)return;c.closest('.wines').querySelectorAll('input').forEach(o=>{if(o!==c&&(isNoDrink(o.value)||isNoDrink(c.value))&&!(isNoDrink(o.value)&&isNoDrink(c.value)))o.checked=false})})};
+const showParty=(p)=>{party=p;const ms=p.members;
+ $('guests').innerHTML=ms.map(guestBox).join('');wire();
  $('party').classList.add('show');$('results').innerHTML='';$('step1').querySelector('.find').style.display=p?'none':'';$('hint').hidden=true;$('step1').querySelector('label[for=name]').style.display=p?'none':'';$('err').hidden=true;
  if(p)$('results').innerHTML=`<p class="hint">Not you? <button type="button" class="linkbtn" id="restart">Search again</button></p>`;
  const r=$('restart');if(r)r.onclick=()=>location.reload();
  $('guests').querySelector('input,button')?.focus()};
-$('addGuest').onclick=()=>{const n=$('guests').children.length;$('guests').insertAdjacentHTML('beforeend',guestBox({name:'',custom:true},n));wire()};
 const find=async()=>{const q=$('name').value.trim();const b=$('findBtn');if(q.length<2)return;
  b.setAttribute('aria-busy','true');b.textContent='Finding';
  try{const r=await fetch('/api/rsvp?name='+encodeURIComponent(q),{headers:{Accept:'application/json'}});const d=await r.json();
   if(d.parties.length===1)showParty(d.parties[0]);
   else if(d.parties.length>1)$('results').innerHTML='<div class="pick"><p class="hint">Which one is you?</p>'+d.parties.map((p,i)=>`<button type="button" data-i="${i}"><b>${esc(p.members.filter(m=>!m.plusOne).map(m=>m.name).join(', '))}</b></button>`).join('')+'</div>',$('results').querySelectorAll('button').forEach(x=>x.onclick=()=>showParty(d.parties[x.dataset.i]));
-  else{$('results').innerHTML=`<div class="notfound">We couldn't find that name. Try your full name as it's written on your invitation.<br><button type="button" class="linkbtn" id="anyway">Still can't find it? Reply anyway</button></div>`;$('anyway').onclick=()=>showParty(null)}
+  else $('results').innerHTML=`<div class="notfound">We couldn't find that name. Try your full name as it's written on your invitation.<br><br>Still can't find it? Email us at <a href="mailto:eandcwedding27@gmail.com">eandcwedding27@gmail.com</a> and we'll sort it out.</div>`;
  }catch(e){$('results').innerHTML='<div class="notfound">Something went wrong. Please check your connection and try again.</div>'}
  b.removeAttribute('aria-busy');b.textContent='Find'};
 $('findBtn').onclick=find;
 $('name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();find()}});
 $('form').addEventListener('submit',async e=>{e.preventDefault();const err=$('err');err.hidden=true;
  const boxes=[...$('guests').children];const responses=[];
- for(const g of boxes){const i=+g.dataset.i;const m=party?party.members[i]:null;
+ for(const g of boxes){const i=+g.dataset.i;const m=party.members[i];
   const yes=g.querySelector('input[value=yes]').checked,no=g.querySelector('input[value=no]').checked;
   const typed=g.querySelector('.pname')?.value.trim()||'';
-  const label=m&&!m.plusOne?m.name:(typed||'this person');
-  if(!m&&!typed){err.textContent='Please add a name for everyone you are replying for.';err.hidden=false;return}
-  if(m&&m.plusOne&&yes&&!typed){err.textContent='Please add your plus one\'s name.';err.hidden=false;return}
-  if(!yes&&!no){if(m&&m.plusOne)continue;err.textContent=`Please say whether ${label} can come.`;err.hidden=false;return}
-  const meal=g.querySelector('select')?.value||'';
-  if(yes&&ROLE==='day'&&DATA.meals.length&&!(m&&m.eveningOnly)&&!meal){err.textContent=`Please choose a meal for ${label}.`;err.hidden=false;return}
-  responses.push({index:i,name:typed,plusOneName:typed,attending:yes?'yes':'no',meal,dietary:g.querySelector('textarea').value})}
+  const label=m.plusOne?(typed||'your plus one'):m.name;
+  const stop=t=>{err.textContent=t;err.hidden=false;g.scrollIntoView({behavior:'smooth',block:'center'})};
+  if(m.plusOne&&yes&&!typed)return stop('Please add your plus one\'s name.');
+  if(!yes&&!no){if(m.plusOne)continue;return stop(`Please say whether ${label} can come.`)}
+  const eats=yes&&ROLE==='day'&&!m.eveningOnly;
+  const r={index:i,plusOneName:typed,attending:yes?'yes':'no',dietary:g.querySelector('textarea').value,wine:[]};
+  if(eats){
+   for(const[,key,lab]of COURSES){const c=g.querySelector(`input[name=${key}${i}]:checked`);if(!c)return stop(`Please choose a ${lab.toLowerCase()} for ${label}.`);r[key]=c.value}
+   r.wine=[...g.querySelectorAll(`input[name=w${i}]:checked`)].map(c=>c.value);
+   if(WINES.length&&!r.wine.length)return stop(`Please choose a wine preference for ${label}.`)}
+  responses.push(r)}
+ if(!responses.length){err.textContent='Please tell us who is coming.';err.hidden=false;return}
  const b=$('sendBtn');b.setAttribute('aria-busy','true');b.textContent='Sending';
- try{const r=await fetch('/api/rsvp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({partyId:party?.id||null,responses,message:$('msg').value,email:$('email').value})});
+ try{const r=await fetch('/api/rsvp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({partyId:party.id,responses,message:$('msg').value,email:$('email').value})});
   const d=await r.json().catch(()=>({}));if(!r.ok||!d.ok)throw new Error(d.error||'Sorry, that didn\'t send. Please try again.');
   const anyYes=responses.some(x=>x.attending==='yes');
   $('doneMsg').textContent=anyYes?'Your RSVP is in. We can\'t wait to celebrate with you!':'Thank you for letting us know. We\'ll miss you!';
