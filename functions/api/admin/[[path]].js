@@ -1,7 +1,7 @@
 // Admin API. The middleware only lets this run for someone signed in with the admin password.
 import { getContent, getPasswords } from "../../_middleware.js";
 import GUESTS from "../../_guests.json";
-import { forward } from "../../_forward.js";
+import { forward, syncGuests } from "../../_forward.js";
 
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" } });
@@ -86,7 +86,8 @@ export async function onRequest({ request, env, params }) {
     if (method === "PUT") {
       const g = cleanGuests(await request.json());
       await env.SITE_KV.put("guests", JSON.stringify(g));
-      return json({ ok: true, guests: g });
+      const sheet = await syncGuests(env, g); // add any new names to the sheet
+      return json({ ok: true, guests: g, sheet });
     }
   }
 
@@ -110,6 +111,17 @@ export async function onRequest({ request, env, params }) {
       message: "Connection test from the settings page. You can delete this row.", email: "",
     };
     return json(await forward(env, reply));
+  }
+
+  if (what === "syncsheet" && method === "POST") {
+    const saved = env.SITE_KV ? await env.SITE_KV.get("guests", "json") : null;
+    return json(await syncGuests(env, Array.isArray(saved) ? saved : GUESTS));
+  }
+
+  // Let a party reply again (clears their "already replied" lock)
+  if (what.startsWith("replied/") && method === "DELETE") {
+    await env.SITE_KV.delete(`replied:${what.slice(8)}`);
+    return json({ ok: true });
   }
 
   if (what === "photo" && method === "POST") {

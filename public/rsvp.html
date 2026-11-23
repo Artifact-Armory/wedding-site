@@ -200,6 +200,7 @@ textarea{min-height:84px;resize:vertical}
 .pick button:hover,.pick button:focus-visible{border-color:var(--pink);outline:none}
 .pick b{color:var(--red)}
 .notfound{background:#fff;border-radius:18px;padding:16px;margin-top:14px;font-size:15px}
+.notfound .guest{background:#fdf0f6;box-shadow:none}
 .linkbtn{background:none;border:0;padding:0;font:700 15px var(--serif);color:var(--red);text-decoration:underline;text-underline-offset:3px;cursor:pointer;min-height:44px}
 .addguest{background:none;border:2px dashed var(--rose);color:var(--red);border-radius:18px;width:100%;min-height:52px;font:700 16px var(--serif);margin-top:14px;cursor:pointer}
 .err{color:var(--red);background:#fff;border:2px solid var(--red);border-radius:14px;padding:10px 12px;font-size:15px}
@@ -286,7 +287,15 @@ const guestBox=(m,i)=>`<div class="guest" data-i="${i}">
 const wire=()=>{$('guests').querySelectorAll('.choice input[type=radio]').forEach(r=>r.onchange=()=>{const g=r.closest('.guest');g.querySelector('.meal').hidden=!(g.querySelector('input[value=yes]').checked)});
  // "I don't drink" choices untick the wines, and the other way round
  $('guests').querySelectorAll('.wines input').forEach(c=>c.onchange=()=>{if(!c.checked)return;c.closest('.wines').querySelectorAll('input').forEach(o=>{if(o!==c&&(isNoDrink(o.value)||isNoDrink(c.value))&&!(isNoDrink(o.value)&&isNoDrink(c.value)))o.checked=false})})};
-const showParty=(p)=>{party=p;const ms=p.members;
+const showReplied=(p)=>{const r=p.replied;const when=new Date(r.receivedAt).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+ const line=(k,v)=>v?`<p style="margin:0"><b style="color:var(--red)">${k}:</b> ${esc(v)}</p>`:'';
+ $('results').innerHTML=`<div class="notfound"><p style="margin:0 0 6px"><b>You've already replied</b> on ${when}. Here's what you sent us.</p>
+ ${r.rows.map(g=>`<div class="guest" style="margin-top:12px"><h3 style="margin-bottom:6px">${esc(g.name)}</h3><p style="margin:0 0 6px;font-weight:700">${g.attending==='Yes'?'Joyfully accepts':'Sadly declines'}</p>${line('Starter',g.starter)}${line('Main',g.main)}${line('Dessert',g.dessert)}${line('Wine',g.wine)}${line('Dietary requirements',g.dietary)}</div>`).join('')}
+ ${r.message?`<div class="guest" style="margin-top:12px">${line('Your message',r.message)}</div>`:''}
+ <p style="margin:16px 0 0">Need to change something? Email us at <a href="mailto:eandcwedding27@gmail.com">eandcwedding27@gmail.com</a> and we'll update it for you.</p>
+ <p class="hint">Not you? <button type="button" class="linkbtn" onclick="location.reload()">Search again</button></p></div>`;
+ $('step1').querySelector('.find').style.display='none';$('hint').hidden=true;$('step1').querySelector('label[for=name]').style.display='none'};
+const showParty=(p)=>{if(p.replied)return showReplied(p);party=p;const ms=p.members;
  $('guests').innerHTML=ms.map(guestBox).join('');wire();
  $('party').classList.add('show');$('results').innerHTML='';$('step1').querySelector('.find').style.display=p?'none':'';$('hint').hidden=true;$('step1').querySelector('label[for=name]').style.display=p?'none':'';$('err').hidden=true;
  if(p)$('results').innerHTML=`<p class="hint">Not you? <button type="button" class="linkbtn" id="restart">Search again</button></p>`;

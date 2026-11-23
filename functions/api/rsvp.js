@@ -42,7 +42,14 @@ async function guestList(env) {
   return GUESTS;
 }
 
-const publicParty = (p) => ({ id: p.id, members: p.members.map((m) => ({ name: m.name, plusOne: !!m.plusOne, eveningOnly: !!m.eveningOnly })) });
+const publicParty = (p, replied) => ({
+  id: p.id,
+  members: p.members.map((m) => ({ name: m.name, plusOne: !!m.plusOne, eveningOnly: !!m.eveningOnly })),
+  // If they've already replied, show them what they said (they can't change it here)
+  replied: replied ? { receivedAt: replied.receivedAt, message: replied.message,
+    rows: replied.rows.map(({ name, attending, starter, main, dessert, wine, dietary, eveningOnly }) => ({ name, attending, starter, main, dessert, wine, dietary, eveningOnly })) } : null,
+});
+const getReplied = (env, id) => env.SITE_KV ? env.SITE_KV.get(`replied:${id}`, "json") : null;
 
 export async function onRequestGet({ request, env, data }) {
   const role = data.role;
@@ -51,7 +58,9 @@ export async function onRequestGet({ request, env, data }) {
   const list = (await guestList(env)).filter((p) => p.type === role);
   const found = list.filter((p) => p.members.some((m) => !m.plusOne && matches(q, m.name)));
   await new Promise((r) => setTimeout(r, 250)); // gentle brake on guessing
-  return json({ parties: found.slice(0, 3).map(publicParty) });
+  const top = found.slice(0, 3);
+  const replies = await Promise.all(top.map((p) => getReplied(env, p.id)));
+  return json({ parties: top.map((p, i) => publicParty(p, replies[i])) });
 }
 
 const clip = (s, n) => String(s ?? "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, n);
@@ -65,6 +74,7 @@ export async function onRequestPost({ request, env, data }) {
   const party = body.partyId ? list.find((p) => p.id === body.partyId) : null;
   // Only guests on the list can reply. Anyone else is told to email us.
   if (!party) return json({ error: "We couldn't find your invitation. Please email us at eandcwedding27@gmail.com." }, 400);
+  if (await getReplied(env, party.id)) return json({ error: "You've already replied. To change anything, please email us at eandcwedding27@gmail.com." }, 409);
   const { menu = {}, wines = [] } = (await getContent(env)).rsvp || {};
   const pick = (v, options) => { const x = clip(v, 80); return options.some((o) => o.name === x) ? x : ""; };
   const responses = Array.isArray(body.responses) ? body.responses.slice(0, 12) : [];
@@ -80,6 +90,7 @@ export async function onRequestPost({ request, env, data }) {
     const eveningOnly = !!m.eveningOnly;
     const eats = role === "day" && attending === "Yes" && !eveningOnly;
     const row = {
+      key: `${party.id}-${r.index}`,
       name, attending,
       starter: eats ? pick(r.starter, menu.starters || []) : "",
       main: eats ? pick(r.main, menu.mains || []) : "",
@@ -110,6 +121,7 @@ export async function onRequestPost({ request, env, data }) {
   // Keep a backup copy on Cloudflare too, noting whether it reached the sheet
   if (env.SITE_KV) {
     await env.SITE_KV.put(`rsvp:${reply.receivedAt}:${reply.partyId}`, JSON.stringify({ ...reply, sheet: sent.ok ? "sent" : sent.error }));
+    await env.SITE_KV.put(`replied:${party.id}`, JSON.stringify(reply));
   } else if (!sent.ok) {
     return json({ error: "Sorry, we couldn't save that just now. Please try again in a minute." }, 502);
   }
