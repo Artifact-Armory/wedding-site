@@ -13,158 +13,168 @@
 --serif:"Fraunces",Georgia,serif;--script:"Yellowtail","Brush Script MT",cursive}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--pink);color:#fff;font:16px/1.5 var(--serif);font-variation-settings:"SOFT" 100}
-body{min-height:100svh;display:flex;flex-direction:column;align-items:center;padding:10px 10px calc(16px + env(safe-area-inset-bottom));overscroll-behavior:none}
+body{min-height:100svh;display:flex;flex-direction:column;align-items:center;padding:calc(8px + env(safe-area-inset-top)) 10px calc(16px + env(safe-area-inset-bottom));overscroll-behavior:none}
 .top{width:100%;max-width:460px;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .top a,.top button{color:#fff;font:700 15px var(--serif);text-decoration:none;background:rgba(255,255,255,.16);border:0;border-radius:999px;min-height:40px;padding:0 14px;display:inline-flex;align-items:center;cursor:pointer}
-h1{font:400 clamp(40px,11vw,56px)/1 var(--script);margin:6px 0 2px;text-shadow:0 3px 0 var(--red)}
-.hud{width:100%;max-width:460px;display:flex;justify-content:space-between;font-weight:800;font-size:18px;padding:4px 8px}
+h1{font:400 clamp(26px,7.5vw,40px)/1 var(--script);margin:0;text-shadow:0 2px 0 var(--red);text-align:center;white-space:nowrap}
+.top a,.top button{flex:none;padding:0 11px}
+@media(max-width:360px){.top a,.top button{font-size:14px;padding:0 9px}h1{font-size:24px}}
+/* the game shrinks on short phones so the thumb stick still fits on screen */
+.wrap{width:min(460px,100%,calc((100svh - 275px) * .75 + 28px));min-width:240px;margin-top:6px}
+.hud{display:flex;justify-content:space-between;font-weight:800;font-size:18px;padding:2px 6px}
 .hud .lives{letter-spacing:2px}
-.frame{position:relative;width:100%;max-width:460px;background:#fff;padding:16px;border-radius:28px;box-shadow:0 8px 0 var(--red)}
+.frame{position:relative;background:#fff;padding:14px;border-radius:26px;box-shadow:0 7px 0 var(--red)}
 canvas{display:block;width:100%;aspect-ratio:3/4;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none;border-radius:6px;background:var(--blush);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-.over{position:absolute;inset:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:20px;background:rgba(204,45,134,.92);border-radius:6px;color:#fff}
+.over{position:absolute;inset:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:20px;background:rgba(204,45,134,.92);border-radius:6px;color:#fff}
 .over[hidden]{display:none}
 .over h2{font:400 44px/1 var(--script);margin:0}
 .over p{margin:0;max-width:30ch}
 .over .big{font:800 46px/1 var(--serif)}
 .btn{display:inline-flex;align-items:center;min-height:54px;padding:0 34px;border-radius:999px;background:#fff;color:var(--pink);font:800 20px var(--serif);border:0;cursor:pointer;box-shadow:0 5px 0 var(--red);margin-top:6px}
 .btn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+/* thumb stick */
+.pad{position:relative;width:126px;height:126px;margin:16px auto 0;border-radius:50%;background:rgba(255,255,255,.18);border:4px solid rgba(255,255,255,.55);touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;flex:none}
+.pad::before{content:"";position:absolute;inset:16px;border-radius:50%;border:2px dashed rgba(255,255,255,.35)}
+.knob{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:#fff;box-shadow:0 4px 0 var(--red),inset 0 -6px 0 var(--blush);pointer-events:none}
 .how{max-width:460px;text-align:center;font-size:15px;opacity:.95;margin:14px 0 0}
-.legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:4px;font-size:14px}
-.legend span{display:inline-flex;align-items:center;gap:6px}
-.legend canvas{width:22px;height:22px;aspect-ratio:auto;background:none;border-radius:0}
+.touch-only{display:none}
+@media (pointer:coarse){.touch-only{display:inline}}
+@media (hover:hover) and (pointer:fine){.pad{display:none}}
 </style>
 </head>
 <body>
 <div class="top">
   <a href="/">&larr; Back</a>
-  <button type="button" id="mute" aria-pressed="false">Sound on</button>
+  <h1>Callum's canapés</h1>
+  <button type="button" id="mute" aria-pressed="false">Sound</button>
 </div>
-<h1>Callum's canapés</h1>
-<div class="hud" aria-live="polite"><span>Score <span id="score">0</span></span><span class="lives" id="lives" aria-label="Lives"></span><span>Best <span id="best">0</span></span></div>
-<div class="frame">
-  <canvas id="game" width="120" height="160" aria-label="Game: move Callum to eat canapés and dodge the kitchen staff"></canvas>
-  <div class="over" id="start">
-    <h2>Hungry?</h2>
-    <p>Callum has escaped the photos and is going for the canapés. The kitchen staff are not happy.</p>
-    <button class="btn" type="button" id="play">Play</button>
+<div class="wrap">
+  <div class="hud" aria-live="polite"><span>Score <span id="score">0</span></span><span class="lives" id="lives" aria-label="Lives"></span><span>Best <span id="best">0</span></span></div>
+  <div class="frame">
+    <canvas id="game" width="168" height="224" aria-label="Game: move Callum to eat canapés and dodge the kitchen staff"></canvas>
+    <div class="over" id="start">
+      <h2>Hungry?</h2>
+      <p>Callum has escaped the photos and is going for the canapés. The kitchen staff are not happy.</p>
+      <button class="btn" type="button" id="play">Play</button>
+    </div>
+    <div class="over" id="end" hidden>
+      <h2 id="end-title">Caught!</h2>
+      <div class="big" id="end-score">0</div>
+      <p id="end-line"></p>
+      <button class="btn" type="button" id="again">Play again</button>
+    </div>
   </div>
-  <div class="over" id="end" hidden>
-    <h2 id="end-title">Caught!</h2>
-    <div class="big" id="end-score">0</div>
-    <p id="end-line"></p>
-    <button class="btn" type="button" id="again">Play again</button>
-  </div>
 </div>
-<p class="how"><b>On a phone:</b> put your thumb anywhere on the game and slide it the way you want to go. <b>On a computer:</b> arrow keys or WASD.</p>
-<div class="legend">
-  <span><canvas width="9" height="9" data-icon="canape"></canvas> Canapé, 10 points</span>
-  <span><canvas width="9" height="9" data-icon="cake"></canvas> Cake: chase them back!</span>
-</div>
+<div class="pad" id="pad" aria-hidden="true"><div class="knob" id="knob"></div></div>
+<p class="how">Eat the canapés (10 points). Grab the cake and the staff run away, so bump them back to the kitchen for 50. <span class="touch-only">Move with the thumb stick.</span> On a computer, use the arrow keys or WASD.</p>
 
 <script>
 (()=>{
 const cv=document.getElementById('game'),g=cv.getContext('2d');
-const W=120,H=160;
+const W=168,H=224;
 g.imageSmoothingEnabled=false;
 
 // ---------- pixel art (each letter is one pixel colour) ----------
-const PAL={k:'#3a0f22',s:'#f4c29c',h:'#6b3b1f',n:'#24305e',N:'#1a2347',w:'#ffffff',W:'#e7dfe6',p:'#e86aa8',P:'#cc2d86',r:'#b0202a',R:'#e0444f',b:'#9a5b2e',g:'#c9ced8',y:'#ffd54a',o:'#e2a24e',O:'#c47a2c',G:'#4f9a4a',c:'#ff8a8a',m:'#ffe6f0',B:'#2a2a33',d:'#7a3a1a',L:'#8fb8ff',l:'#cfe0ff'};
-const art=rows=>rows;
+const PAL={k:'#3a0f22',K:'#6e3346',s:'#f6c7a1',S:'#e3a47e',h:'#e0702c',H:'#b04e1a',e:'#d4631f',E:'#a9481a',n:'#26336a',N:'#18214a',w:'#ffffff',W:'#dcd3dc',p:'#e86aa8',P:'#cc2d86',r:'#b0202a',R:'#e0444f',b:'#9a5b2e',g:'#c9ced8',G:'#4f9a4a',y:'#ffd54a',o:'#e9b062',O:'#c47a2c',c:'#ff8f7a',m:'#ffe6f0',B:'#2a2a33',d:'#7a3a1a',L:'#8fb8ff',l:'#d6e6ff',x:'#f2f2f2'};
+const legs={A:["...nnn.nnn...","...nnn.nnn...","...kkk.kkk..."],B:["...nnn.nnn...","..nnn...nnn..","..kkk...kkk.."]};
+const callumTop=["....hhhhh....","...hhhhhhhh..","..hhhhhhhhhh.","..hHsssssHhh.","..hsssssssh..","..sskssskss..","..Sssssssss..","..eeSsssSee..","..eeerrreee..","...eeeeeee...","....eeeee....","..nnnwrwnnn..",".nnnnwrwnnnn.",".nnnnwrwnnpn.",".snnnnwnnnns.",".s.nnnnnnn.s."];
+const callumEatTop=callumTop.map((r,i)=>i===8?"..eekRRRkee..":i===9?"...eekkkee...":r);
+const callumBackTop=["....hhhhh....","...hhhhhhhh..","..hhhhhhhhhh.","..hhhhhhhhhh.","..hHhhhhhhHh.","..hHHhhhHHh..","..ehhhhhhhe..","..eesssssee..","...sssssss...","....sssss....","....sssss....","..nnnnnnnnn..",".nnnnnnnnnnn.",".nnnnnnnnnnn.",".snnnnnnnnns.",".s.nnnnnnn.s."];
+const chefTop=["...wwwwwww...","..wxwwwxwww..","..wwwwwwwxw..","...wwwwwww...","...WWWWWWW...","..sssssssss..","..skkssskks..","..sskssskss..","..rsssssssr..","..ssskkksss..","...sssssss...",".wwwwwkwwwwwb",".wwwwwwwwwwwb","swwwwwkwwwwsb","..wwwwwwwww.b"];
+const chefLegs={A:["...BBB.BBB...","...BBB.BBB...","...kkk.kkk..."],B:["...BBB.BBB...","..BBB...BBB..","..kkk...kkk.."]};
+const waiterTop=["....BBBBB....","...BBBBBBB...","..BBBBBBBBB..","..BsssssssB..","..skkssskks..","..sskssskss..","..rsssssssr..","..sskkkkkss..","...sssssss...","gggggwrkrww..",".s.BBBwBBBB..",".s.BBBwBBBBs.","...BBBwBBBBs.","...BBBBBBBB..","...BBBBBBB..."];
 const SPR={
- callumA:art(["...hhh...","..hhhhh..","..hsssh..","..sksks..","..sssss..","...srs...",".nnwrwnn.",".nnnwnnp.",".snnnnns.","..nn.nn..","..kk..kk."]),
- callumB:art(["...hhh...","..hhhhh..","..hsssh..","..sksks..","..sssss..","...srs...",".nnwrwnn.",".nnnwnnp.",".snnnnns.","..nn.nn..",".kk..kk.."]),
- callumEat:art(["...hhh...","..hhhhh..","..hsssh..","..sksks..","..skkks..","...sRs...",".nnwrwnn.",".nnnwnnp.",".snnnnns.","..nn.nn..","..kk..kk."]),
- callumBack:art(["...hhh...","..hhhhh..","..hhhhh..","..hhhhh..","..sssss..","...sss...",".nnnnnnn.",".nnnnnnn.",".snnnnns.","..nn.nn..","..kk..kk."]),
- chefA:art(["..wwwww..",".wwwwwww.",".wwwwwww.","..WWWWW..","..ksssk..","..rksks..","..skkks..",".wwwkwwwb","swwwkwwwb",".wwwwwww.","..kk.kk.."]),
- chefB:art(["..wwwww..",".wwwwwww.",".wwwwwww.","..WWWWW..","..ksssk..","..rksks..","..skkks..","bwwwkwww.","bwwwkwwws",".wwwwwww.",".kk...kk."]),
- waiterA:art(["...BBB...","..BBBBB..","..sssss..","..ksssk..","..sksks..","..skkks..","ggwrkrwB.","gggwwwBB.",".sBBwBBs.","..BB.BB..","..kk.kk.."]),
- waiterB:art(["...BBB...","..BBBBB..","..sssss..","..ksssk..","..sksks..","..skkks..","ggwrkrwB.","gggwwwBB.",".sBBwBBs.","..BB.BB..",".kk...kk."]),
- dizzy:art(["..lllll..",".lllllll.",".lllllll.","..LLLLL..","..sLssL..","..sksks..","..sskss..",".LLLLLLL.","sLLLLLLLs",".LLLLLLL.","..kk.kk.."]),
- // canapés
- volau:art([".ooooo.","oOyyyOo","oOyyyOo",".ooooo.",".OOOOO."]),
- blini:art(["..ccc..",".cGccc.","owwwwwo",".ooooo."]),
- burger:art(["..ooo..",".ooooo.","GGGGGGG","ddddddd",".ooooo."]),
- sausage:art([".ooooo.","oOdddOo",".ooooo."]),
- skewer:art(["...R...","..yyy..","...R...","..GGG..","...b...","...b..."]),
- cake:art(["...r...","..www..",".pPpPp.",".mmmmm.",".ppppp.","WWWWWWW"]),
- heart:art([".rr.rr.","rrrrrrr","rrrrrrr",".rrrrr.","..rrr..","...r..."])
+ callumA:callumTop.concat(legs.A),callumB:callumTop.concat(legs.B),callumEat:callumEatTop.concat(legs.A),callumBack:callumBackTop.concat(legs.A),callumBackB:callumBackTop.concat(legs.B),
+ chefA:chefTop.concat(chefLegs.A),chefB:chefTop.concat(chefLegs.B),waiterA:waiterTop.concat(chefLegs.A),waiterB:waiterTop.concat(chefLegs.B),
+ volau:["..GyGyG..",".yyyyyyy.","OoooooooO","OoOoOoOoO","OoooooooO",".OOOOOOO."],
+ blini:["...cGc...","..ccccc..",".wwwwwww.","ooooooooo",".OOOOOOO."],
+ burger:["..ooooo..",".ooyoyoo.","ooooooooo","GGGGGGGGG","rrrrrrrrr","ddddddddd","ooooooooo",".OOOOOOO."],
+ sausage:[".oooooooo.","oyoyoyoyoo","oddddddddo","oooooooooo",".OOOOOOOO."],
+ skewer:["..R..",".RRR.","..y..",".yyy.",".yyy.","..G..",".GGG.","..b..","..b..","..b.."],
+ cake:[".....y.....",".....r.....","...wwwww...","..wpwpwpw..","..mmmmmmm..","..ppppppp..",".wwwwwwwww.",".wpwpwpwpw.",".mmmmmmmmm.",".ppppppppp.","ggggggggggg",".ggggggggg."]
 };
 const FOODS=['volau','blini','burger','sausage','skewer'];
-// pre-render sprites to tiny canvases (normal + flipped)
+const SCARED={w:'l',x:'l',W:'L',B:'L',k:'N',r:'s'};
 const cache={};
-function sprite(name,flip){const key=name+(flip?'F':'');if(cache[key])return cache[key];
+function sprite(name,flip,tint){const key=name+(flip?'F':'')+(tint?'T':'');if(cache[key])return cache[key];
  const rows=SPR[name],w=Math.max(...rows.map(r=>r.length)),h=rows.length,c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');
- rows.forEach((r,j)=>[...r].forEach((ch,i)=>{if(ch!=='.'&&PAL[ch]){x.fillStyle=PAL[ch];x.fillRect(flip?w-1-i:i,j,1,1)}}));return cache[key]=c}
-function draw(name,cx,cy,flip){const s=sprite(name,flip);g.drawImage(s,Math.round(cx-s.width/2),Math.round(cy-s.height/2))}
-// little legend icons under the game
-document.querySelectorAll('[data-icon]').forEach(c=>{const x=c.getContext('2d'),s=sprite(c.dataset.icon==='canape'?'volau':'cake');c.width=s.width;c.height=s.height;x.drawImage(s,0,0)});
+ rows.forEach((r,j)=>[...r].forEach((ch,i)=>{if(tint&&tint[ch])ch=tint[ch];if(ch!=='.'&&PAL[ch]){x.fillStyle=PAL[ch];x.fillRect(flip?w-1-i:i,j,1,1)}}));return cache[key]=c}
+function draw(name,cx,cy,flip,tint){const s=sprite(name,flip,tint);g.drawImage(s,Math.round(cx-s.width/2),Math.round(cy-s.height/2))}
 
 // ---------- sound (tiny beeps, can be muted) ----------
-let ac=null,muted=localStorage.getItem('cc-muted')==='1';
+let ac=null,muted=false;try{muted=localStorage.getItem('cc-muted')==='1'}catch(e){}
 const muteBtn=document.getElementById('mute');
-const showMute=()=>{muteBtn.textContent=muted?'Sound off':'Sound on';muteBtn.setAttribute('aria-pressed',muted)};showMute();
-muteBtn.onclick=()=>{muted=!muted;localStorage.setItem('cc-muted',muted?'1':'0');showMute()};
+const showMute=()=>{muteBtn.textContent=muted?'Muted':'Sound';muteBtn.setAttribute('aria-pressed',muted);muteBtn.setAttribute('aria-label',muted?'Sound is off':'Sound is on')};showMute();
+muteBtn.onclick=()=>{muted=!muted;try{localStorage.setItem('cc-muted',muted?'1':'0')}catch(e){}showMute()};
 function beep(f1,f2,dur,type='square',vol=.06){if(muted)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();
  const o=ac.createOscillator(),v=ac.createGain(),t=ac.currentTime;o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+dur);
  v.gain.setValueAtTime(vol,t);v.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(v);v.connect(ac.destination);o.start(t);o.stop(t+dur)}catch(e){}}
-const sfx={eat:()=>beep(500,900,.09),cake:()=>{beep(400,1200,.25,'triangle',.08)},bonk:()=>beep(900,300,.15),hit:()=>beep(300,60,.45,'sawtooth',.07),staff:()=>beep(200,150,.2,'square',.04)};
+const sfx={eat:()=>beep(500,900,.09),cake:()=>beep(400,1200,.25,'triangle',.08),bonk:()=>beep(900,300,.15),hit:()=>beep(300,60,.45,'sawtooth',.07),staff:()=>beep(200,150,.2,'square',.04)};
 
 // ---------- the room ----------
-const DOOR={x:W/2,y:14};
-const TABLES=[{x:32,y:62,r:11},{x:88,y:62,r:11},{x:60,y:112,r:12}];
-const BOUND={l:8,r:W-8,t:20,b:H-8};
-function drawRoom(){
- // floor: blush and white checks
- for(let y=0;y<H;y+=8)for(let x=0;x<W;x+=8){g.fillStyle=((x+y)/8)%2?'#fbe7f0':'#ffffff';g.fillRect(x,y,8,8)}
- // wavy pink walls
- g.fillStyle=PAL.P;
- for(let x=0;x<W;x++){const o=Math.round(2+1.5*Math.sin(x/5));g.fillRect(x,0,1,12+o);g.fillRect(x,H-4-o,1,4+o)}
- for(let y=0;y<H;y++){const o=Math.round(1.5+1.5*Math.sin(y/5));g.fillRect(0,y,4+o,1);g.fillRect(W-4-o,y,4+o,1)}
- // kitchen door with round window
- g.fillStyle=PAL.r;g.fillRect(DOOR.x-11,2,22,15);g.fillStyle=PAL.k;g.fillRect(DOOR.x,2,1,15);
- g.fillStyle=PAL.m;g.fillRect(DOOR.x-7,6,4,4);g.fillRect(DOOR.x+4,6,4,4);
- // round tables with pink cloths and a tiny vase
- TABLES.forEach(t=>{g.fillStyle='rgba(90,22,48,.18)';circle(t.x+1,t.y+3,t.r);g.fillStyle=PAL.p;circle(t.x,t.y,t.r);g.fillStyle=PAL.m;circle(t.x,t.y,t.r-3);
-  g.fillStyle=PAL.G;g.fillRect(t.x-1,t.y-4,1,3);g.fillRect(t.x+1,t.y-5,1,4);g.fillStyle=PAL.r;g.fillRect(t.x-2,t.y-6,2,2);g.fillRect(t.x+1,t.y-7,2,2);g.fillStyle=PAL.g;g.fillRect(t.x-2,t.y-1,5,3)});
-}
+const DOOR={x:W/2,y:22};
+const TABLES=[{x:42,y:88,r:16},{x:126,y:88,r:16},{x:84,y:154,r:17}];
+const BOUND={l:11,r:W-11,t:30,b:H-10};
 function circle(cx,cy,r){for(let y=-r;y<=r;y++){const w=Math.round(Math.sqrt(r*r-y*y));g.fillRect(Math.round(cx-w),Math.round(cy+y),w*2+1,1)}}
+// the room never changes, so draw it once and reuse it
+const room=document.createElement('canvas');room.width=W;room.height=H;
+(()=>{const real=g;const rg=room.getContext('2d');const old=g;
+ const G=rg,fill=(c,x,y,w,h)=>{G.fillStyle=c;G.fillRect(x,y,w,h)},circ=(cx,cy,r)=>{for(let y=-r;y<=r;y++){const w=Math.round(Math.sqrt(r*r-y*y));G.fillRect(Math.round(cx-w),Math.round(cy+y),w*2+1,1)}};
+ // floor: blush and white checks with a soft edge line
+ for(let y=0;y<H;y+=12)for(let x=0;x<W;x+=12){const pink=((x+y)/12)%2;fill(pink?'#fbe2ee':'#ffffff',x,y,12,12);fill(pink?'#f6d3e3':'#fbf3f7',x,y+11,12,1)}
+ // wavy pink walls with a darker inner line
+ for(let x=0;x<W;x++){const o=Math.round(3+2*Math.sin(x/7));fill(PAL.P,x,0,1,18+o);fill('#a51f68',x,18+o,1,1);fill(PAL.P,x,H-6-o,1,6+o);fill('#a51f68',x,H-7-o,1,1)}
+ for(let y=0;y<H;y++){const o=Math.round(2+2*Math.sin(y/7));fill(PAL.P,0,y,6+o,1);fill('#a51f68',6+o,y,1,1);fill(PAL.P,W-6-o,y,6+o,1);fill('#a51f68',W-7-o,y,1,1)}
+ // bunting along the top wall
+ for(let x=10;x<W-10;x+=12){const c=[PAL.w,PAL.R,PAL.y][(x/12|0)%3];G.fillStyle=c;for(let j=0;j<5;j++)G.fillRect(x+j,4,6-2*j>0?6-2*j:1,1),G.fillRect(x+j,4+j,6-2*j,1)}
+ // kitchen double doors with round windows
+ const dx=DOOR.x;fill('#7d1420',dx-19,3,38,25);fill(PAL.r,dx-17,5,16,23);fill(PAL.r,dx+1,5,16,23);fill('#7d1420',dx,5,1,23);
+ G.fillStyle='#7d1420';circ(dx-9,13,4);circ(dx+9,13,4);G.fillStyle='#bfe3ff';circ(dx-9,13,3);circ(dx+9,13,3);fill('#ffffff',dx-11,11,2,1);fill('#ffffff',dx+7,11,2,1);
+ fill('#e9c46a',dx-4,18,2,3);fill('#e9c46a',dx+3,18,2,3);
+ // round tables: shadow, scalloped cloth, plates, glasses and a vase of roses
+ TABLES.forEach(t=>{G.fillStyle='rgba(90,22,48,.16)';circ(t.x+2,t.y+5,t.r+1);
+  G.fillStyle=PAL.p;circ(t.x,t.y,t.r);for(let a=0;a<24;a++){const A=a/24*Math.PI*2;G.fillStyle=a%2?PAL.p:PAL.P;circ(t.x+Math.cos(A)*t.r,t.y+Math.sin(A)*t.r,2)}
+  G.fillStyle=PAL.m;circ(t.x,t.y,t.r-4);G.fillStyle='#fff6fa';circ(t.x-2,t.y-2,t.r-8);
+  for(let a=0;a<5;a++){const A=a/5*Math.PI*2+.3,px=t.x+Math.cos(A)*(t.r-9),py=t.y+Math.sin(A)*(t.r-9);G.fillStyle=PAL.W;circ(px,py,3);G.fillStyle='#fff';circ(px,py,2)}
+  fill(PAL.g,t.x-2,t.y-1,5,5);fill('#eef1f6',t.x-1,t.y,1,3);
+  fill(PAL.G,t.x-2,t.y-5,1,4);fill(PAL.G,t.x+2,t.y-6,1,5);fill(PAL.G,t.x,t.y-7,1,6);
+  fill(PAL.r,t.x-3,t.y-7,2,2);fill(PAL.R,t.x+1,t.y-8,3,2);fill(PAL.r,t.x-1,t.y-9,2,2)});
+})();
 
 // ---------- game state ----------
 const $=id=>document.getElementById(id);
-let best=+localStorage.getItem('cc-best')||0;$('best').textContent=best;
+let best=0;try{best=+localStorage.getItem('cc-best')||0}catch(e){}$('best').textContent=best;
 let S=null,running=false,last=0;
-function newGame(){S={score:0,eaten:0,lives:3,time:0,p:{x:W/2,y:H-30,r:4,vx:0,vy:0,face:1,back:false,eat:0,inv:0,step:0},
+function newGame(){S={score:0,eaten:0,lives:3,time:0,p:{x:W/2,y:H-36,r:7,vx:0,vy:0,face:1,back:false,eat:0,inv:0,step:0},
  staff:[],food:[],cake:null,cakeTimer:12,sugar:0,pause:0,shake:0,pops:[],nextStaff:[4,10,18,28,40,55]};
  addStaff('chef');for(let i=0;i<3;i++)addFood();updHud()}
-function addStaff(kind){S.staff.push({kind,x:DOOR.x+(Math.random()*10-5),y:DOOR.y+8,r:4,vx:0,vy:0,step:0,wait:.6,home:0,face:1});sfx.staff()}
-function free(x,y,r){if(x<BOUND.l+r||x>BOUND.r-r||y<BOUND.t+r||y>BOUND.b-r)return false;return TABLES.every(t=>Math.hypot(x-t.x,y-t.y)>t.r+r+2)}
-function addFood(){for(let i=0;i<80;i++){const x=14+Math.random()*(W-28),y=28+Math.random()*(H-44);
- if(free(x,y,4)&&Math.hypot(x-S.p.x,y-S.p.y)>30&&S.food.every(f=>Math.hypot(x-f.x,y-f.y)>20)){S.food.push({x,y,kind:FOODS[Math.floor(Math.random()*FOODS.length)],t:Math.random()*6});return}}}
-function placeCake(){for(let i=0;i<80;i++){const x=14+Math.random()*(W-28),y=40+Math.random()*(H-60);if(free(x,y,5)&&Math.hypot(x-S.p.x,y-S.p.y)>45){S.cake={x,y,life:7};return}}}
-function updHud(){$('score').textContent=S.score;$('lives').innerHTML='';for(let i=0;i<3;i++){const s=document.createElement('span');s.textContent=i<S.lives?'♥':'♡';$('lives').append(s)}
- $('lives').setAttribute('aria-label',S.lives+' lives left')}
-
-// keep things out of walls and tables
+function addStaff(kind){S.staff.push({kind,x:DOOR.x+(Math.random()*16-8),y:DOOR.y+14,r:7,vx:0,vy:0,step:0,wait:.6,home:0,face:1});sfx.staff()}
+function free(x,y,r){if(x<BOUND.l+r||x>BOUND.r-r||y<BOUND.t+r||y>BOUND.b-r)return false;return TABLES.every(t=>Math.hypot(x-t.x,y-t.y)>t.r+r+3)}
+function addFood(){for(let i=0;i<80;i++){const x=18+Math.random()*(W-36),y=40+Math.random()*(H-56);
+ if(free(x,y,7)&&Math.hypot(x-S.p.x,y-S.p.y)>40&&S.food.every(f=>Math.hypot(x-f.x,y-f.y)>28)){S.food.push({x,y,kind:FOODS[Math.floor(Math.random()*FOODS.length)],t:Math.random()*6});return}}}
+function placeCake(){for(let i=0;i<80;i++){const x=18+Math.random()*(W-36),y=50+Math.random()*(H-70);if(free(x,y,9)&&Math.hypot(x-S.p.x,y-S.p.y)>60){S.cake={x,y,life:7};return}}}
+function updHud(){$('score').textContent=S.score;$('lives').textContent='♥'.repeat(S.lives)+'♡'.repeat(3-S.lives);$('lives').setAttribute('aria-label',S.lives+' lives left')}
 function collide(o){o.x=Math.max(BOUND.l+o.r,Math.min(BOUND.r-o.r,o.x));o.y=Math.max(BOUND.t+o.r,Math.min(BOUND.b-o.r,o.y));
  TABLES.forEach(t=>{const dx=o.x-t.x,dy=o.y-t.y,d=Math.hypot(dx,dy)||1,m=t.r+o.r;if(d<m){o.x=t.x+dx/d*m;o.y=t.y+dy/d*m}})}
 
 // ---------- controls ----------
 const keys=new Set();
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d'].includes(k)){keys.add(k);if(running)e.preventDefault()}
- if((k===' '||k==='enter')&&!running&&document.activeElement.tagName!=='BUTTON'){e.preventDefault();start()}});
+ if((k===' '||k==='enter')&&!running&&document.activeElement.tagName!=='BUTTON'){e.preventDefault();$('play').click()}});
 addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
-let stick=null; // thumb joystick: wherever you first touch is the centre
-const toGame=e=>{const b=cv.getBoundingClientRect();return{x:(e.clientX-b.left)/b.width*W,y:(e.clientY-b.top)/b.height*H}};
-cv.addEventListener('pointerdown',e=>{e.preventDefault();cv.setPointerCapture(e.pointerId);const p=toGame(e);stick={id:e.pointerId,ox:p.x,oy:p.y,x:p.x,y:p.y}});
-cv.addEventListener('pointermove',e=>{if(stick&&e.pointerId===stick.id){const p=toGame(e);stick.x=p.x;stick.y=p.y}});
-const endStick=e=>{if(stick&&e.pointerId===stick.id)stick=null};
-cv.addEventListener('pointerup',endStick);cv.addEventListener('pointercancel',endStick);
-cv.addEventListener('contextmenu',e=>e.preventDefault());
+// thumb stick under the game
+const pad=$('pad'),knob=$('knob');let stick=null;
+const setKnob=(x,y)=>{knob.style.transform=`translate(${x}px,${y}px)`};
+function stickMove(e){const b=pad.getBoundingClientRect(),R=b.width/2-14;let dx=e.clientX-(b.left+b.width/2),dy=e.clientY-(b.top+b.height/2);const d=Math.hypot(dx,dy);if(d>R){dx=dx/d*R;dy=dy/d*R}
+ setKnob(dx,dy);stick={id:e.pointerId,x:dx/R,y:dy/R}}
+pad.addEventListener('pointerdown',e=>{e.preventDefault();pad.setPointerCapture(e.pointerId);stickMove(e)});
+pad.addEventListener('pointermove',e=>{if(stick&&e.pointerId===stick.id)stickMove(e)});
+const endStick=e=>{if(stick&&e.pointerId===stick.id){stick=null;setKnob(0,0)}};
+pad.addEventListener('pointerup',endStick);pad.addEventListener('pointercancel',endStick);
+[pad,cv].forEach(el=>el.addEventListener('contextmenu',e=>e.preventDefault()));
 function input(){let x=0,y=0;
  if(keys.has('arrowleft')||keys.has('a'))x--;if(keys.has('arrowright')||keys.has('d'))x++;if(keys.has('arrowup')||keys.has('w'))y--;if(keys.has('arrowdown')||keys.has('s'))y++;
- if(stick){const dx=stick.x-stick.ox,dy=stick.y-stick.oy,d=Math.hypot(dx,dy);if(d>2){const m=Math.min(1,d/14);x=dx/d*m;y=dy/d*m}
-  // let the centre follow the thumb so you never run out of room
-  if(d>18){stick.ox=stick.x-dx/d*18;stick.oy=stick.y-dy/d*18}}
+ if(stick){const d=Math.hypot(stick.x,stick.y);if(d>.15){x=stick.x;y=stick.y}}
  const d=Math.hypot(x,y);if(d>1){x/=d;y/=d}return{x,y}}
 
 // ---------- update ----------
@@ -172,91 +182,82 @@ const LINES=[[0,"Not a single canapé. Were you even hungry?"],[50,"A light nibb
 function update(dt){
  S.time+=dt;const p=S.p;
  if(S.pause>0){S.pause-=dt;return}
- // Callum
- const i=input(),sp=58*(S.sugar>0?1.15:1);
+ const i=input(),sp=80*(S.sugar>0?1.15:1);
  p.vx+=(i.x*sp-p.vx)*Math.min(1,dt*14);p.vy+=(i.y*sp-p.vy)*Math.min(1,dt*14);
  p.x+=p.vx*dt;p.y+=p.vy*dt;collide(p);
- const moving=Math.hypot(p.vx,p.vy)>8;if(moving){p.step+=dt*8;if(Math.abs(p.vx)>4)p.face=p.vx>0?1:-1;p.back=p.vy<-20&&Math.abs(p.vy)>Math.abs(p.vx)}
+ if(Math.hypot(p.vx,p.vy)>14){p.step+=dt*8;if(Math.abs(p.vx)>6)p.face=p.vx>0?1:-1;p.back=p.vy<-30&&Math.abs(p.vy)>Math.abs(p.vx)}
  p.eat=Math.max(0,p.eat-dt);p.inv=Math.max(0,p.inv-dt);
- // canapés
  S.food.forEach(f=>f.t+=dt);
- for(let k=S.food.length-1;k>=0;k--){const f=S.food[k];if(Math.hypot(f.x-p.x,f.y-p.y)<8){S.food.splice(k,1);S.score+=10;S.eaten++;p.eat=.25;sfx.eat();S.pops.push({x:f.x,y:f.y-4,t:.7,txt:'+10'});addFood();
+ for(let k=S.food.length-1;k>=0;k--){const f=S.food[k];if(Math.hypot(f.x-p.x,f.y-p.y)<14){S.food.splice(k,1);S.score+=10;S.eaten++;p.eat=.25;sfx.eat();S.pops.push({x:f.x,y:f.y-8,t:.7,txt:'+10'});addFood();
   if(S.nextStaff.length&&S.eaten>=S.nextStaff[0]){S.nextStaff.shift();addStaff(S.staff.length%2?'waiter':'chef')}updHud()}}
- // cake power-up
- if(S.cake){S.cake.life-=dt;if(S.cake.life<=0)S.cake=null;else if(Math.hypot(S.cake.x-p.x,S.cake.y-p.y)<9){S.cake=null;S.sugar=6;S.score+=25;S.pops.push({x:p.x,y:p.y-10,t:1,txt:'CAKE!'});sfx.cake();updHud()}}
+ if(S.cake){S.cake.life-=dt;if(S.cake.life<=0)S.cake=null;else if(Math.hypot(S.cake.x-p.x,S.cake.y-p.y)<16){S.cake=null;S.sugar=6;S.score+=25;S.pops.push({x:p.x,y:p.y-18,t:1,txt:'CAKE!'});sfx.cake();updHud()}}
  else{S.cakeTimer-=dt;if(S.cakeTimer<=0){placeCake();S.cakeTimer=16+Math.random()*8}}
  S.sugar=Math.max(0,S.sugar-dt);
- // staff
  const hurry=1+Math.min(.45,S.time/150);
  S.staff.forEach(s=>{
   if(s.wait>0){s.wait-=dt;return}
-  if(s.home>0){ // bonked back to the kitchen
-   const dx=DOOR.x-s.x,dy=DOOR.y+6-s.y,d=Math.hypot(dx,dy);if(d<3){s.home=0;s.wait=1.2}else{s.x+=dx/d*90*dt;s.y+=dy/d*90*dt}return}
-  let tx=p.x,ty=p.y;
-  if(s.kind==='waiter'){tx+=p.vx*.5;ty+=p.vy*.5} // waiters try to cut you off
-  let dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy)||1;
-  if(S.sugar>0){dx=-dx;dy=-dy}
-  const base=(s.kind==='waiter'?40:34)*hurry*(S.sugar>0?.6:1),turn=s.kind==='waiter'?2.2:5;
+  if(s.home>0){const dx=DOOR.x-s.x,dy=DOOR.y+12-s.y,d=Math.hypot(dx,dy);if(d<5){s.home=0;s.wait=1.2}else{s.x+=dx/d*130*dt;s.y+=dy/d*130*dt}return}
+  let tx=p.x,ty=p.y;if(s.kind==='waiter'){tx+=p.vx*.5;ty+=p.vy*.5}
+  let dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy)||1;if(S.sugar>0){dx=-dx;dy=-dy}
+  const base=(s.kind==='waiter'?56:47)*hurry*(S.sugar>0?.6:1),turn=s.kind==='waiter'?2.2:5;
   s.vx+=(dx/d*base-s.vx)*Math.min(1,dt*turn);s.vy+=(dy/d*base-s.vy)*Math.min(1,dt*turn);
-  s.x+=s.vx*dt;s.y+=s.vy*dt;collide(s);s.step+=dt*7;if(Math.abs(s.vx)>3)s.face=s.vx>0?1:-1;
- });
- // staff bump each other apart so they don't stack
- for(let a=0;a<S.staff.length;a++)for(let b=a+1;b<S.staff.length;b++){const A=S.staff[a],B=S.staff[b];if(A.home||B.home)continue;const dx=B.x-A.x,dy=B.y-A.y,d=Math.hypot(dx,dy)||1;if(d<8){const m=(8-d)/2;A.x-=dx/d*m;A.y-=dy/d*m;B.x+=dx/d*m;B.y+=dy/d*m}}
- // caught?
- S.staff.forEach(s=>{if(s.home||s.wait>0)return;if(Math.hypot(s.x-p.x,s.y-p.y)<7){
-  if(S.sugar>0){s.home=1;S.score+=50;S.pops.push({x:s.x,y:s.y-8,t:.9,txt:'+50'});sfx.bonk();updHud()}
+  s.x+=s.vx*dt;s.y+=s.vy*dt;collide(s);s.step+=dt*7;if(Math.abs(s.vx)>5)s.face=s.vx>0?1:-1});
+ for(let a=0;a<S.staff.length;a++)for(let b=a+1;b<S.staff.length;b++){const A=S.staff[a],B=S.staff[b];if(A.home||B.home)continue;const dx=B.x-A.x,dy=B.y-A.y,d=Math.hypot(dx,dy)||1;if(d<14){const m=(14-d)/2;A.x-=dx/d*m;A.y-=dy/d*m;B.x+=dx/d*m;B.y+=dy/d*m}}
+ for(const s of S.staff){if(s.home||s.wait>0)continue;if(Math.hypot(s.x-p.x,s.y-p.y)<12){
+  if(S.sugar>0){s.home=1;S.score+=50;S.pops.push({x:s.x,y:s.y-16,t:.9,txt:'+50'});sfx.bonk();updHud()}
   else if(p.inv<=0){S.lives--;sfx.hit();S.shake=.35;updHud();
    if(S.lives<=0){gameOver();return}
-   p.inv=2;S.pause=.8;S.pops.push({x:p.x,y:p.y-10,t:1.2,txt:'OI!'});S.staff.forEach(o=>{o.home=1})}}});
- S.pops.forEach(o=>{o.t-=dt;o.y-=dt*12});S.pops=S.pops.filter(o=>o.t>0);
+   p.inv=2;S.pause=.8;S.pops.push({x:p.x,y:p.y-18,t:1.2,txt:'OI!'});S.staff.forEach(o=>{o.home=1});break}}}
+ S.pops.forEach(o=>{o.t-=dt;o.y-=dt*18});S.pops=S.pops.filter(o=>o.t>0);
  S.shake=Math.max(0,S.shake-dt);
 }
 
 // ---------- draw ----------
-function txt(s,x,y,col){g.font='bold 8px monospace';g.textAlign='center';g.fillStyle=PAL.k;g.fillText(s,x+1,y+1);g.fillStyle=col;g.fillText(s,x,y)}
+function txt(s,x,y,col){g.font='bold 12px monospace';g.textAlign='center';g.fillStyle=PAL.k;g.fillText(s,x+1,y+1);g.fillStyle=col;g.fillText(s,x,y)}
+const shadow=(x,y,w)=>{g.fillStyle='rgba(90,22,48,.18)';g.fillRect(Math.round(x-w/2),Math.round(y),w,2)};
 function render(){
- g.save();if(S&&S.shake>0)g.translate(Math.round((Math.random()-.5)*4),Math.round((Math.random()-.5)*4));
- drawRoom();
+ g.save();if(S&&S.shake>0)g.translate(Math.round((Math.random()-.5)*6),Math.round((Math.random()-.5)*6));
+ g.drawImage(room,0,0);
  if(!S){g.restore();return}
- // things are drawn top to bottom so nearer ones overlap
  const list=[];
- S.food.forEach(f=>list.push({y:f.y,d:()=>{const bob=Math.round(Math.sin(f.t*4));g.fillStyle='rgba(90,22,48,.15)';g.fillRect(Math.round(f.x-3),Math.round(f.y+3),7,1);draw(f.kind,f.x,f.y+bob-1)}}));
- if(S.cake&&(S.cake.life>2||Math.floor(S.cake.life*8)%2))list.push({y:S.cake.y,d:()=>{draw('cake',S.cake.x,S.cake.y+Math.round(Math.sin(S.time*5)))
-  g.fillStyle=PAL.y;const a=S.time*4;g.fillRect(Math.round(S.cake.x+Math.cos(a)*7),Math.round(S.cake.y+Math.sin(a)*7),1,1);g.fillRect(Math.round(S.cake.x-Math.cos(a)*7),Math.round(S.cake.y-Math.sin(a)*7),1,1)}});
+ S.food.forEach(f=>list.push({y:f.y,d:()=>{const bob=Math.round(Math.sin(f.t*4)*1.5);shadow(f.x,f.y+6,10);draw(f.kind,f.x,f.y+bob)}}));
+ if(S.cake&&(S.cake.life>2||Math.floor(S.cake.life*8)%2))list.push({y:S.cake.y,d:()=>{shadow(S.cake.x,S.cake.y+7,12);draw('cake',S.cake.x,S.cake.y+Math.round(Math.sin(S.time*5)*1.5));
+  g.fillStyle=PAL.y;for(let j=0;j<3;j++){const a=S.time*4+j*2.1;g.fillRect(Math.round(S.cake.x+Math.cos(a)*12),Math.round(S.cake.y+Math.sin(a)*12),2,2)}}});
  S.staff.forEach(s=>list.push({y:s.y,d:()=>{
-  const scared=S.sugar>0&&!s.home,frame=Math.floor(s.step)%2;
-  if(s.home){g.globalAlpha=.45}
-  const name=scared?(S.sugar<1.5&&Math.floor(S.time*8)%2?(s.kind+'A'):'dizzy'):(s.kind+(frame?'B':'A'));
-  g.fillStyle='rgba(90,22,48,.18)';g.fillRect(Math.round(s.x-3),Math.round(s.y+5),7,1);
-  draw(name,s.x,s.y,s.face<0);g.globalAlpha=1;
-  if(!scared&&!s.home&&s.wait<=0&&Math.floor(S.time*3+s.x)%4===0){g.fillStyle=PAL.R;g.fillRect(Math.round(s.x+4),Math.round(s.y-8),1,3);g.fillRect(Math.round(s.x+4),Math.round(s.y-4),1,1)} // angry "!"
+  const scared=S.sugar>0&&!s.home,frame=Math.floor(s.step)%2,flash=scared&&S.sugar<1.5&&Math.floor(S.time*8)%2;
+  if(s.home)g.globalAlpha=.45;
+  shadow(s.x,s.y+9,11);draw(s.kind+(frame?'B':'A'),s.x,s.y,s.face<0,scared&&!flash?SCARED:null);g.globalAlpha=1;
+  if(!scared&&!s.home&&s.wait<=0&&Math.floor(S.time*3+s.x/8)%4===0){g.fillStyle=PAL.R;g.fillRect(Math.round(s.x+7),Math.round(s.y-16),2,5);g.fillRect(Math.round(s.x+7),Math.round(s.y-9),2,2)}
+  if(scared&&!flash){g.fillStyle=PAL.y;const a=S.time*6;g.fillRect(Math.round(s.x+Math.cos(a)*6),Math.round(s.y-12+Math.sin(a)*2),2,2)}
  }}));
  const p=S.p;list.push({y:p.y,d:()=>{if(p.inv>0&&Math.floor(p.inv*10)%2)return;
-  g.fillStyle='rgba(90,22,48,.18)';g.fillRect(Math.round(p.x-3),Math.round(p.y+5),7,1);
-  const moving=Math.hypot(p.vx,p.vy)>8,name=p.eat>0?'callumEat':p.back?'callumBack':(moving&&Math.floor(p.step)%2?'callumB':'callumA');
+  shadow(p.x,p.y+9,11);
+  const moving=Math.hypot(p.vx,p.vy)>14,alt=moving&&Math.floor(p.step)%2;
+  const name=p.eat>0?'callumEat':p.back?(alt?'callumBackB':'callumBack'):(alt?'callumB':'callumA');
   draw(name,p.x,p.y,p.face<0);
-  if(S.sugar>0){g.fillStyle=Math.floor(S.time*10)%2?PAL.y:PAL.p;g.fillRect(Math.round(p.x-6),Math.round(p.y-7),1,1);g.fillRect(Math.round(p.x+6),Math.round(p.y-5),1,1)}}});
+  if(S.sugar>0){g.fillStyle=Math.floor(S.time*10)%2?PAL.y:PAL.p;g.fillRect(Math.round(p.x-10),Math.round(p.y-12),2,2);g.fillRect(Math.round(p.x+9),Math.round(p.y-8),2,2)}}});
  list.sort((a,b)=>a.y-b.y).forEach(o=>o.d());
  S.pops.forEach(o=>txt(o.txt,Math.round(o.x),Math.round(o.y),o.txt==='OI!'?'#fff':PAL.y));
- if(S.sugar>0){g.fillStyle=PAL.k;g.fillRect(W/2-32,H-12,64,4);g.fillStyle=PAL.y;g.fillRect(W/2-31,H-11,Math.round(62*S.sugar/6),2)}
- // thumb stick ring
- if(stick&&running){g.strokeStyle='rgba(90,22,48,.35)';g.lineWidth=1;g.beginPath();g.arc(stick.ox,stick.oy,14,0,7);g.stroke();g.fillStyle='rgba(204,45,134,.45)';g.beginPath();g.arc(stick.x,stick.y,5,0,7);g.fill()}
+ if(S.sugar>0){g.fillStyle=PAL.k;g.fillRect(W/2-40,H-18,80,6);g.fillStyle=PAL.y;g.fillRect(W/2-39,H-17,Math.round(78*S.sugar/6),4)}
  g.restore();
 }
 
 // ---------- loop ----------
 function frame(t){if(!running)return;const dt=Math.min(.05,(t-last)/1000||0);last=t;update(dt);render();if(running)requestAnimationFrame(frame)}
-function start(){newGame();$('start').hidden=true;$('end').hidden=true;running=true;last=performance.now();try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume()}catch(e){}requestAnimationFrame(frame)}
-function gameOver(){running=false;stick=null;render();
- if(S.score>best){best=S.score;localStorage.setItem('cc-best',best);$('best').textContent=best}
- $('end-title').textContent=S.score>=best&&S.score>0?'New best!':'Caught!';
+function go(){$('start').hidden=true;$('end').hidden=true;running=true;last=performance.now();try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume()}catch(e){}requestAnimationFrame(frame)}
+let paused=false;
+$('play').onclick=()=>{if(!paused)newGame();paused=false;go()};
+$('again').onclick=()=>{newGame();go()};
+function gameOver(){running=false;stick=null;setKnob(0,0);render();
+ const isBest=S.score>best&&S.score>0;if(isBest){best=S.score;try{localStorage.setItem('cc-best',best)}catch(e){}$('best').textContent=best}
+ $('end-title').textContent=isBest?'New best!':'Caught!';
  $('end-score').textContent=S.score;
  $('end-line').textContent=LINES.filter(l=>S.score>=l[0]).pop()[1];
  $('end').hidden=false;$('again').focus()}
-$('play').onclick=start;$('again').onclick=start;
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){running=false;keys.clear();stick=null;$('start').querySelector('h2').textContent='Paused';$('start').querySelector('p').textContent='Back for seconds?';$('play').textContent='Carry on';$('play').onclick=()=>{$('start').hidden=true;running=true;last=performance.now();requestAnimationFrame(frame)};$('start').hidden=false}});
-// show a sample scene behind the start screen
-newGame();S.food.forEach(f=>f.t=0);render();
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){running=false;paused=true;keys.clear();stick=null;setKnob(0,0);
+ $('start').querySelector('h2').textContent='Paused';$('start').querySelector('p').textContent='Back for seconds?';$('play').textContent='Carry on';$('start').hidden=false}});
+// a sample scene behind the start screen
+newGame();render();
 })();
 </script>
 </body>
