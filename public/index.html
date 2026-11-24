@@ -88,12 +88,12 @@ nav .mono{font-family:var(--serif);font-weight:800;color:var(--blush);font-size:
 
 /* carousel: photos glide across on a loop */
 .carousel{overflow:hidden;margin:0 calc(-1*max(4vw,12px));padding:6px 0 10px;-webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
-.track{display:flex;gap:16px;width:max-content;animation:glide 32s linear infinite}
+.track{display:flex;gap:16px;width:max-content;animation:glide calc(32s*var(--reps,1)) linear infinite}
 .carousel:hover .track,.carousel:active .track{animation-play-state:paused}
 .track figure{flex:none;width:min(72vw,320px);margin:0;aspect-ratio:1;border-radius:28px;overflow:hidden;border:6px solid #fff}
 .track img{width:100%;height:100%;object-fit:cover}
 @keyframes glide{to{transform:translateX(calc(-50% - 8px))}}
-@media(prefers-reduced-motion:reduce){.track{animation-duration:90s}}
+@media(prefers-reduced-motion:reduce){.track{animation-duration:calc(90s*var(--reps,1))}}
 
 /* story */
 .story{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:clamp(24px,5vw,64px);align-items:center}
@@ -315,14 +315,32 @@ const bodyE=(path,d)=>!EDIT?body(d):edText(path+'.text',d.text)
  +((d.phones||[]).length?'<ul class="taxis">'+d.phones.map((x,k)=>`<li data-item="${path}.phones.${k}"><span>${ed(path+'.phones.'+k+'.name',x.name,'span','Name')}</span><span>${ed(path+'.phones.'+k+'.number',x.number,'span','Number')}</span></li>`).join('')+'</ul>':'')
  +`<div class="edmeta">${pin} Google Maps place: ${ed(path+'.map',d.map||'','span','none')}<br>Button wording: ${ed(path+'.mapLabel',d.mapLabel||'','span','Open in Google Maps')}</div>`;
 let tl=null;
+// Repeat the photos enough times to cover wide screens, then double the lot,
+// so the loop never runs out of photos and shows a gap.
+let carouselBase='',carouselReps=0;
+const fillCarousel=()=>{
+ const track=document.getElementById('track');
+ if(!carouselBase){carouselBase=track.innerHTML;carouselReps=0}
+ const first=track.firstElementChild;if(!first)return;
+ const n=(carouselBase.match(/<figure/g)||[]).length;
+ const setW=n*(first.offsetWidth+16);
+ const reps=Math.max(1,Math.ceil(track.parentElement.clientWidth/setW));
+ if(reps===carouselReps)return;
+ carouselReps=reps;
+ const hidden=carouselBase.replace(/<figure/g,'<figure aria-hidden="true"');
+ track.innerHTML=carouselBase+hidden.repeat(reps*2-1);
+ track.style.setProperty('--reps',reps);
+};
+addEventListener('resize',()=>{if(!EDIT&&carouselBase)fillCarousel()});
 const renderSite=window.renderSite=()=>{
  const P=SITE.photos||{};
  const setImg=(id,key)=>{const el=document.getElementById(id);if(!el)return;if(P[key])el.src=P[key];if(EDIT)el.dataset.photo='photos.'+key};
  setImg('ph-left','heroLeft');setImg('ph-right','heroRight');setImg('ph-story','story');
  if(P.footer)document.querySelector('footer').style.setProperty('--footer-img',`url("${P.footer}")`);
  const track=document.getElementById('track');
- track.innerHTML=(P.carousel||[]).map((src,k)=>`<figure ${EDIT?`data-item="photos.carousel.${k}"`:''}><img src="${esc(src)}" alt="Ellie and Callum" loading="lazy" ${EDIT?`data-photo="photos.carousel.${k}"`:''}></figure>`).join('');
- if(!EDIT)track.insertAdjacentHTML('beforeend',[...track.children].map(f=>f.outerHTML.replace('<figure','<figure aria-hidden="true"')).join(''));
+ track.innerHTML=(P.carousel||[]).map((src,k)=>`<figure ${EDIT?`data-item="photos.carousel.${k}"`:''}><img src="${esc(src)}" alt="Ellie and Callum" ${EDIT?`data-photo="photos.carousel.${k}"`:''}></figure>`).join('');
+ carouselBase='';
+ if(!EDIT)fillCarousel();
  document.getElementById('story-text').innerHTML=edText('story.text',SITE.story&&SITE.story.text);
  document.getElementById('timeline').innerHTML=SITE.timeline.map((t,i)=>[t,i]).filter(([t])=>mine(t)).map(([t,i])=>`<li class="${t.eve?'eve':''}${EDIT?' in':''}" ${EDIT?`data-item="timeline.${i}"`:''}><time>${ed(`timeline.${i}.time`,t.time,'span','Time')}</time><div class="rail"><span class="dot" ${EDIT?`data-toggle="timeline.${i}.eve" title="Tap to switch dot colour"`:''}></span></div><div><b>${ed(`timeline.${i}.title`,t.title,'span','Title')}</b><span>${ed(`timeline.${i}.note`,t.note,'span','Small line')}</span>${who(t)}</div></li>`).join('');
  for(const list of ['details','travel'])
