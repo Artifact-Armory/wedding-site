@@ -1,6 +1,6 @@
 {
   "story": {
-    "text": "This is where your story goes: how you met, the first date, and how the proposal happened. A few short paragraphs read best on a phone.\n\nYou can change this from the admin panel."
+    "text": "We met by chance in a pub in Wokingham when I agreed to have a drink with Cat while she waited for her friend to arrive. In walked Callum, and an awkward handshake and 3 lemonades later I knew he was the one for me. From the everyday moments of building our life together in our home by the coast to my favourite memories of watching Callum singing along to Boyzone / Blue / Westlife whenever I have dragged him to a 00s boyband reunion, that feeling has never faded.\n\nSo when Callum asked me to marry him, in a cosy cabin somewhere in Kent, it was the easiest ‘yes’ of my life. Now I am so excited to celebrate with you all and finally become Mrs White!"
   },
   "photos": {
     "heroLeft": "/img/hero-left.jpg",
@@ -84,14 +84,54 @@
   ],
   "details": [
     {
-      "title": "The venue",
-      "text": "The Castle Westenhanger, Stone Street, Westenhanger, Hythe, Kent CT21 4HX. The ceremony, dinner and dancing are all in one place.",
+      "title": "The Venue",
+      "text": "The Castle Westenhanger, Stone Street, Westenhanger, Hythe, Kent CT21 4HX.",
       "map": "The Castle Westenhanger, Stone Street, Westenhanger, Hythe CT21 4HX",
       "mapLabel": "Open in Google Maps",
       "only": "day"
     },
     {
-      "title": "The venue",
+      "title": "Dress code",
+      "text": "Black Tie optional. Dinner jackets/tuxedos and formal dresses encouraged. Men please wear dark suits. Women, think long dresses with colour welcomed. Please no white, cream or ivory except shirts.",
+      "only": "day"
+    },
+    {
+      "title": "Food",
+      "text": "Please provide your allergies and dietary requirements when submitting your rsvp. All allergens, vegan and vegetarian will be catered for if details are provided.",
+      "only": "day"
+    },
+    {
+      "title": "Gifts",
+      "text": "You being there to celebrate our big day is the best gift we could ask for! However, if you would like to gift us something for our married life, please visit our registry: https://www.weddingshop.com/buy/view/345937",
+      "only": "day"
+    },
+    {
+      "title": "Children",
+      "text": "Our wedding is a child-free event. Please leave the kids at home and enjoy a responsibility-free party!",
+      "only": "day"
+    },
+    {
+      "title": "Plus ones",
+      "text": "Unfortunately there is limited space in our ceremony, so only guests named on the invite are able to attend.",
+      "only": "day"
+    },
+    {
+      "title": "Accessibility",
+      "text": "The venue is wheelchair accessible. If you require any other support, please let us know: eandcwedding27@gmail.com",
+      "only": "day"
+    },
+    {
+      "title": "Taxis",
+      "text": "Due to the rurality of the venue, taxis must be booked in advance. The wedding finishes at midnight, please plan accordingly. Venue recommended companies can be [found below](#taxis).",
+      "only": "day"
+    },
+    {
+      "title": "Good to know",
+      "text": "Smoking and vaping is prohibited on site, please use the car park if required.\n\nDue to venue policy, there are no drinks prior to the ceremony.\n\nThe ceremony will start promptly at 1pm. Please arrive at 12.30pm to take your seats.",
+      "only": "day"
+    },
+    {
+      "title": "The Venue",
       "text": "The Castle Westenhanger, Stone Street, Westenhanger, Hythe, Kent CT21 4HX.",
       "map": "The Castle Westenhanger, Stone Street, Westenhanger, Hythe CT21 4HX",
       "mapLabel": "Open in Google Maps",
@@ -99,30 +139,42 @@
     },
     {
       "title": "Dress code",
-      "text": "Dress to celebrate. Add any dress code here."
+      "text": "Black Tie optional. Dinner jackets/tuxedos or dark suits welcome. Formal dresses with colour encouraged. Please no white, cream or ivory except shirts.",
+      "only": "evening"
     },
     {
       "title": "Food",
-      "text": "Choose your meal when you RSVP, and tell us about any dietary requirements there too.",
-      "only": "day"
-    },
-    {
-      "title": "Food",
-      "text": "Evening food is served at 8:30. Tell us about any dietary requirements when you RSVP.",
+      "text": "Please provide your allergies and dietary requirements when submitting your rsvp. All allergens, vegan and vegetarian will be catered for in the evening meal if details are provided.",
       "only": "evening"
     },
     {
       "title": "Gifts",
-      "text": "Your being there is the best gift. Add any gift or honeymoon fund details here."
+      "text": "You being there to celebrate our big day is the best gift we could ask for! However, if you would like to gift us something for our married life, please visit our registry: https://www.weddingshop.com/buy/view/345937",
+      "only": "evening"
+    },
+    {
+      "title": "Children",
+      "text": "Our wedding is a child-free event. Please leave the kids at home and enjoy a responsibility-free party!",
+      "only": "evening"
+    },
+    {
+      "title": "Plus ones",
+      "text": "Only guests named on the invite are invited to attend.",
+      "only": "evening"
+    },
+    {
+      "title": "Accessibility",
+      "text": "The venue is wheelchair accessible. If you require any other support, please let us know: eandcwedding27@gmail.com",
+      "only": "evening"
+    },
+    {
+      "title": "Taxis",
+      "text": "Due to the rurality of the venue, taxis must be booked in advance. The wedding finishes at midnight, please plan accordingly. Venue recommended companies can be [found below](#taxis).",
+      "only": "evening"
     },
     {
       "title": "Good to know",
-      "text": "Confetti is welcome, but it must be biodegradable.\n\nThe venue is wheelchair accessible. Let us know if you need anything.\n\nThe bar opens after the ceremony.",
-      "only": "day"
-    },
-    {
-      "title": "Good to know",
-      "text": "The venue is wheelchair accessible. Let us know if you need anything.\n\nThe bar is open all evening.",
+      "text": "Smoking and vaping is prohibited on site, please use the car park if required.\n\nDue to venue policy, there are no drinks prior to the ceremony.",
       "only": "evening"
     }
   ],
