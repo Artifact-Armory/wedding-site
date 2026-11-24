@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..900,100,1&family=Yellowtail&display=swap" rel="stylesheet">
 <style>
 /* A silly little arcade game for the guests. Same colours and fonts as the main site.
-   Five rooms: reception, ceremony, castle lawns, marquee, dance floor. Doors open every 1,000 points. */
+   Five rooms: reception, ceremony, castle lawns, marquee, dance floor. Doors open every 500 points. */
 :root{--pink:#cc2d86;--red:#b0202a;--rose:#e86aa8;--blush:#f6d3e3;--ink:#5a1630;
 --serif:"Fraunces",Georgia,serif;--script:"Yellowtail","Brush Script MT",cursive}
 *{box-sizing:border-box}
@@ -60,6 +60,8 @@ form.save{display:flex;flex-direction:column;align-items:center;gap:8px;width:10
 form.save label{font-weight:700}
 form.save .row{display:flex;gap:8px;width:100%}
 form.save input{flex:1;min-width:0;min-height:48px;border-radius:12px;border:3px solid #fff;padding:0 12px;font:800 20px ui-monospace,"Courier New",monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--ink);background:#fff}
+form.save .name-msg{background:#fff;color:var(--red);font-weight:700;border-radius:10px;padding:6px 12px;font-size:15px}
+form.save .name-msg[hidden]{display:none}
 form.save input:focus{outline:3px solid #ffe36b;outline-offset:2px}
 /* thumb stick */
 .pad{position:relative;width:126px;height:126px;margin:16px auto 0;border-radius:50%;background:rgba(255,255,255,.18);border:4px solid rgba(255,255,255,.55);touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;flex:none}
@@ -80,19 +82,19 @@ form.save input:focus{outline:3px solid #ffe36b;outline-offset:2px}
 </div>
 <div class="wrap">
   <div class="hud" aria-live="polite"><span>Score <span id="score">0</span></span><span class="lives" id="lives" aria-label="Lives"></span><span id="lvl">Level 1</span></div>
-  <div class="goal" id="goal">Doors open at 1,000</div>
+  <div class="goal" id="goal">Doors open at 500</div>
   <div class="frame">
     <canvas id="game" width="168" height="224" aria-label="Game: move Callum to eat canapés and dodge the kitchen staff"></canvas>
     <div class="banner" id="banner" aria-live="polite"><small id="banner-n">LEVEL 1</small><b id="banner-t">The reception</b></div>
   </div>
 </div>
 <div class="pad" id="pad" aria-hidden="true"><div class="knob" id="knob"></div></div>
-<p class="how">Eat the canapés (10 points). Grab the cake and the staff run away, so bump them back to the kitchen for 50. Every 1,000 points the doors open to the next room. <span class="touch-only">Move with the thumb stick.</span> On a computer, use the arrow keys or WASD.</p>
+<p class="how">Eat the canapés (10 points). Grab the cake and the staff run away, so bump them back to the kitchen for 50. Every 500 points the doors open to the next room. <span class="touch-only">Move with the thumb stick.</span> On a computer, use the arrow keys or WASD.</p>
 
 <div class="over" id="start">
   <canvas id="hero" width="13" height="19" aria-hidden="true"></canvas>
   <h2 id="start-title">Hungry?</h2>
-  <p id="start-text">Callum is loose at the wedding and going for the canapés. The kitchen staff are not happy. Reach 1,000 points to open the doors to the next room.</p>
+  <p id="start-text">Callum is loose at the wedding and going for the canapés. The kitchen staff are not happy. Reach 500 points to open the doors to the next room.</p>
   <button class="btn" type="button" id="play">Play</button>
   <div class="board-wrap"><h3>High scores</h3><ol class="board" id="board-start"></ol><div class="board-note" id="board-note-start"></div></div>
 </div>
@@ -103,6 +105,7 @@ form.save input:focus{outline:3px solid #ffe36b;outline-offset:2px}
   <form class="save" id="save" hidden>
     <label for="name">You made the scoreboard! Your name:</label>
     <div class="row"><input id="name" maxlength="12" autocomplete="nickname" autocapitalize="characters" spellcheck="false" enterkeyhint="done"><button class="btn small" type="submit">Save</button></div>
+    <p class="name-msg" id="name-msg" role="alert" hidden>Keep it family friendly! Silly is fine, swearing isn't. Try another name.</p>
   </form>
   <div class="board-wrap"><h3>High scores</h3><ol class="board" id="board-end"></ol><div class="board-note" id="board-note-end"></div></div>
   <button class="btn" type="button" id="again">Play again</button>
@@ -189,7 +192,7 @@ const LEVELS=[
    for(let x=10;x<W-10;x+=12){G.fillStyle=[PAL.w,PAL.R,PAL.y][(x/12|0)%3];for(let j=0;j<4;j++)G.fillRect(x+j,4+j,7-2*j,1)}
    this.circles.forEach(t=>roundTable(G,t,PAL.p,PAL.P))}},
  {name:'The ceremony',start:2,door:{frame:'#b8913f',panel:'#f4efe6',win:'#fff4c2'},
-  circles:[],rects:[64,96,128,160].flatMap(y=>[{x:16,y,w:46,h:10},{x:106,y,w:46,h:10}]),
+  circles:[],rects:[64,96,128,160].flatMap(y=>[{x:31,y,w:31,h:10},{x:106,y,w:31,h:10}]),
   bg(G){seed=7;for(let y=0;y<H;y+=12){const off=(y/12)%2?8:0;for(let x=-16;x<W;x+=16){const v=rnd();fillOn(G,v<.2?'#d9cfc3':v<.5?'#e6ddd2':'#ece5dc',x+off,y,16,12);fillOn(G,'#cbbfb1',x+off,y,16,1);fillOn(G,'#cbbfb1',x+off,y,1,12)}}
    fillOn(G,'#9e1b26',70,26,28,H);fillOn(G,PAL.r,72,26,24,H);fillOn(G,'#d9b45a',72,26,1,H);fillOn(G,'#d9b45a',95,26,1,H);
    for(let i=0;i<40;i++)fillOn(G,rnd()<.5?PAL.p:'#fff',74+rnd()*20,40+rnd()*170,2,1);
@@ -257,12 +260,12 @@ function drawDoor(L,open,t){const d=L.door,x=DOOR.x;
 
 // ---------- game state ----------
 const BOUND={l:11,r:W-11,t:30,b:H-10};
-const STEP=1000; // points needed for each set of doors
+const STEP=500; // points needed for each set of doors
 let S=null,running=false,paused=false,last=0;
 const L=()=>LEVELS[S.level-1];
 function newGame(){S={score:0,lives:3,time:0,level:1,p:{x:W/2,y:H-36,r:7,vx:0,vy:0,face:1,back:false,eat:0,inv:0,step:0},pops:[],shake:0,pause:0};startLevel();updHud()}
 function startLevel(){const p=S.p;Object.assign(p,{x:W/2,y:H-36,vx:0,vy:0,inv:1});
- Object.assign(S,{staff:[],food:[],cake:null,cakeTimer:10,sugar:0,eaten:0,ltime:0,open:false,nextStaff:[4,10,18,28,40]});
+ Object.assign(S,{pops:[],staff:[],food:[],cake:null,cakeTimer:10,sugar:0,eaten:0,ltime:0,open:false,nextStaff:[4,10,18,28,40]});
  for(let i=0;i<L().start;i++)addStaff(i%2?'waiter':'chef',.8+i*1.2);
  const n=S.level>=4?4:3;for(let i=0;i<n;i++)addFood();updHud()}
 function addStaff(kind,wait=.6){S.staff.push({kind,x:DOOR.x+(Math.random()*16-8),y:DOOR.y+14,r:7,vx:0,vy:0,step:0,wait,home:0,face:1,side:0,sideT:0});sfx.staff()}
@@ -308,7 +311,7 @@ function banner(n,title){$('banner-n').textContent=n;$('banner-t').textContent=t
 function nextLevel(){S.level++;S.score+=100;S.lives=Math.min(3,S.lives+1);startLevel();S.pause=1.6;sfx.level();banner('LEVEL '+S.level+(L().final?' · THE LAST ONE':''),L().name)}
 
 // ---------- update ----------
-const LINES=[[0,"Not a single canapé. Were you even hungry?"],[50,"A light nibble. The chefs barely noticed."],[150,"Respectable. Ellie would like some left for the guests."],[300,"The kitchen is filing a complaint."],[600,"So close to the doors. One more go?"],[1000,"Through the doors! The ceremony will never be the same."],[2000,"Out on the lawns, still eating. Impressive."],[3000,"The marquee has been cleared out."],[4000,"Dance floor legend. There is no food left at this wedding."]];
+const LINES=[[0,"Not a single canapé. Were you even hungry?"],[50,"A light nibble. The chefs barely noticed."],[150,"Respectable. Ellie would like some left for the guests."],[300,"So close to the doors. One more go?"],[500,"Through the doors! The ceremony will never be the same."],[1000,"Out on the lawns, still eating. Impressive."],[1500,"The marquee has been cleared out."],[2000,"Dance floor legend. There is no food left at this wedding."]];
 function update(dt){
  S.time+=dt;const p=S.p;
  if(S.pause>0){S.pause-=dt;return}
@@ -398,12 +401,24 @@ function showBoard(id,me){const el=$(id),list=board.slice(0,id==='board-start'?5
  $(id.replace('board','board-note')).textContent=shared?'':'Scores on this device only.'}
 async function loadBoard(){try{const r=await fetch('/api/scores',{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw 0;const j=await r.json();if(!j.shared)throw 0;board=j.scores||[];shared=true}
  catch(e){shared=false;try{board=JSON.parse(store.get('cc-board')||'[]')}catch(_){board=[]}}showBoard('board-start');showBoard('board-end')}
+// no swearing on the scoreboard (same check as functions/_names.js on the server)
+const squash=(s) => String(s || "").toLowerCase()
+  .replace(/[0@4]/g, (c) => ({ 0: "o", "@": "a", 4: "a" })[c]).replace(/[1!|]/g, "i").replace(/3/g, "e").replace(/[5$]/g, "s").replace(/7/g, "t").replace(/8/g, "b")
+  .replace(/[^a-z]/g, "").replace(/(.)\1+/g, "$1");
+const ANYWHERE = ["fuck", "fuk", "fck", "fcuk", "phuck", "shit", "cunt", "twat", "bitch", "bastard", "bollock", "arsehole", "asshole", "dickhead",
+  "motherf", "slut", "whore", "nigga", "faggot", "retard", "piss", "bellend", "tosser", "dildo", "nazi", "spastic", "wanker"].map(squash);
+const WHOLE = ["cock", "prick", "tit", "tits", "spunk", "cum", "jizz", "slag", "pussy", "fag", "wank", "knobhead", "nob", "minge", "clit", "porn", "sex", "anal",
+  "rape", "rapist", "paki", "kike", "chink", "nigger", "spaz"].map(squash);
+const isRude=name=>{const all=squash(name);if(ANYWHERE.some(w=>all.includes(w)))return true;const words=String(name||'').split(/[\s'.-]+/).map(squash).filter(Boolean);return words.some(w=>WHOLE.includes(w))||WHOLE.includes(all)};
 const qualifies=sc=>sc>0&&sc%5===0&&(board.length<10||sc>board[Math.min(board.length,10)-1].score);
 async function saveScore(name){const entry={name:cleanName(name),score:S.score,level:S.level,at:new Date().toISOString()};store.set('cc-name',entry.name);
- if(shared){try{const r=await fetch('/api/scores',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(entry)});if(!r.ok)throw 0;const j=await r.json();board=j.scores;const me=board.find(x=>x.name===entry.name&&x.score===entry.score);showBoard('board-end',me);showBoard('board-start');return}catch(e){shared=false}}
+ if(shared){try{const r=await fetch('/api/scores',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(entry)});if(r.status===400){const j=await r.json().catch(()=>({}));if(j.error==='rude')return 'rude'}if(!r.ok)throw 0;const j=await r.json();board=j.scores;const me=board.find(x=>x.name===entry.name&&x.score===entry.score);showBoard('board-end',me);showBoard('board-start');return}catch(e){shared=false}}
  board=board.concat(entry).sort((a,b)=>b.score-a.score).slice(0,10);store.set('cc-board',JSON.stringify(board));showBoard('board-end',entry);showBoard('board-start')}
-$('save').addEventListener('submit',async e=>{e.preventDefault();const b=e.submitter||$('save').querySelector('button');b.disabled=true;b.textContent='Saving…';
- await saveScore($('name').value);$('save').hidden=true;b.disabled=false;b.textContent='Save';$('again').focus()});
+$('name').addEventListener('input',()=>{$('name-msg').hidden=true});
+$('save').addEventListener('submit',async e=>{e.preventDefault();const v=$('name').value;
+ if(isRude(v)||isRude(cleanName(v))){$('name-msg').hidden=false;$('name').focus();return}
+ const b=e.submitter||$('save').querySelector('button');b.disabled=true;b.textContent='Saving…';
+ const res=await saveScore(v);b.disabled=false;b.textContent='Save';if(res==='rude'){$('name-msg').hidden=false;return}$('save').hidden=true;b.disabled=false;b.textContent='Save';$('again').focus()});
 
 // ---------- loop ----------
 function frame(t){if(!running)return;const dt=Math.min(.05,(t-last)/1000||0);last=t;update(dt);if(running)render();if(running)requestAnimationFrame(frame)}
@@ -411,7 +426,7 @@ function go(){$('start').hidden=true;$('end').hidden=true;running=true;last=perf
 $('play').onclick=()=>{if(!paused){newGame();S.pause=1.2;banner('LEVEL 1',L().name)}paused=false;go()};
 $('again').onclick=()=>{newGame();S.pause=1.2;banner('LEVEL 1',L().name);go()};
 function gameOver(){running=false;stick=null;setKnob(0,0);render();
- $('end-title').textContent=S.score>=4000?'What a night!':'Caught!';
+ $('end-title').textContent=S.score>=2000?'What a night!':'Caught!';
  $('end-score').textContent=S.score.toLocaleString('en-GB');
  $('end-line').textContent=LINES.filter(l=>S.score>=l[0]).pop()[1];
  const q=qualifies(S.score);$('save').hidden=!q;showBoard('board-end');
