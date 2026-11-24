@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..900,100,1&family=Yellowtail&display=swap" rel="stylesheet">
 <style>
 /* A silly little arcade game for the guests. Same colours and fonts as the main site.
-   Five rooms: kitchen, ceremony, castle lawns, marquee, dance floor. Doors open every 500 points. */
+   Five rooms: kitchen, ceremony, castle lawns, marquee, dance floor. Doors open every 250 points. */
 :root{--pink:#cc2d86;--red:#b0202a;--rose:#e86aa8;--blush:#f6d3e3;--ink:#5a1630;
 --serif:"Fraunces",Georgia,serif;--script:"Yellowtail","Brush Script MT",cursive}
 *{box-sizing:border-box}
@@ -82,19 +82,19 @@ form.save input:focus{outline:3px solid #ffe36b;outline-offset:2px}
 </div>
 <div class="wrap">
   <div class="hud" aria-live="polite"><span>Score <span id="score">0</span></span><span class="lives" id="lives" aria-label="Lives"></span><span id="lvl">Level 1</span></div>
-  <div class="goal" id="goal">Doors open at 500</div>
+  <div class="goal" id="goal">Doors open at 250</div>
   <div class="frame">
     <canvas id="game" width="168" height="224" aria-label="Game: move Callum to eat canapés and dodge the kitchen staff"></canvas>
     <div class="banner" id="banner" aria-live="polite"><small id="banner-n">LEVEL 1</small><b id="banner-t">The reception</b></div>
   </div>
 </div>
 <div class="pad" id="pad" aria-hidden="true"><div class="knob" id="knob"></div></div>
-<p class="how">Eat the canapés (10 points). Grab the cake and the staff run away, so bump them back to the kitchen for 50. Every 500 points the doors open to the next room. <span class="touch-only">Move with the thumb stick.</span> On a computer, use the arrow keys or WASD.</p>
+<p class="how">Eat the canapés (10 points). Grab the cake and the staff run away, so bump them back to the kitchen for 50. Every 250 points the doors open to the next room. <span class="touch-only">Move with the thumb stick.</span> On a computer, use the arrow keys or WASD.</p>
 
 <div class="over" id="start">
   <canvas id="hero" width="13" height="19" aria-hidden="true"></canvas>
   <h2 id="start-title">Hungry?</h2>
-  <p id="start-text">Callum is loose at the wedding and going for the canapés. The kitchen staff are not happy. Reach 500 points to open the doors to the next room.</p>
+  <p id="start-text">Callum is loose at the wedding and going for the canapés. The kitchen staff are not happy. Reach 250 points to open the doors to the next room.</p>
   <button class="btn" type="button" id="play">Play</button>
   <div class="board-wrap"><h3>High scores</h3><ol class="board" id="board-start"></ol><div class="board-note" id="board-note-start"></div></div>
 </div>
@@ -234,7 +234,7 @@ const LEVELS=[
    const f=this.circles[2];G.fillStyle='rgba(30,60,20,.25)';circOn(G,f.x+2,f.y+4,f.r);G.fillStyle='#b9b2a8';circOn(G,f.x,f.y,f.r);G.fillStyle='#8fc8f0';circOn(G,f.x,f.y,f.r-4);G.fillStyle='#b9e1fb';circOn(G,f.x-2,f.y-2,f.r-9);G.fillStyle='#b9b2a8';circOn(G,f.x,f.y,4);G.fillStyle='#fff';circOn(G,f.x,f.y-1,2);
    this.rects.forEach(r=>{fillOn(G,'rgba(30,60,20,.25)',r.x+2,r.y+3,r.w,r.h);fillOn(G,'#2f6e2c',r.x,r.y,r.w,r.h);fillOn(G,'#3f8a37',r.x+1,r.y+1,r.w-2,r.h-4);for(let x=r.x+3;x<r.x+r.w-2;x+=7)fillOn(G,PAL.p,x,r.y+2,2,2)})}},
  {name:'The marquee',start:3,door:{frame:'#ffffff',panel:PAL.p,win:null,tent:true},
-  circles:[{x:34,y:122,r:14},{x:134,y:122,r:14},{x:84,y:102,r:14},{x:50,y:62,r:3},{x:118,y:62,r:3},{x:50,y:180,r:3},{x:118,y:180,r:3}],rects:[],
+  circles:[{x:43,y:124,r:12},{x:125,y:124,r:12},{x:84,y:100,r:13},{x:50,y:62,r:3},{x:118,y:62,r:3},{x:50,y:180,r:3},{x:118,y:180,r:3}],rects:[],
   bg(G){for(let y=0;y<H;y+=8){fillOn(G,(y/8)%2?'#e9cb9c':'#e2c08d',0,y,W,8);fillOn(G,'#c9a26b',0,y+7,W,1);for(let x=((y/8)%3)*19;x<W;x+=57)fillOn(G,'#c9a26b',x,y,1,7)}
    for(let x=0;x<W;x++){const o=Math.round(3+2*Math.sin(x/7)),c=(x/8|0)%2?'#ffffff':'#f7c6dc';fillOn(G,c,x,0,1,18+o);fillOn(G,'#d7a3bb',x,18+o,1,1);fillOn(G,c,x,H-6-o,1,6+o)}
    for(let y=0;y<H;y++){const o=Math.round(2+2*Math.sin(y/7)),c=(y/8|0)%2?'#ffffff':'#f7c6dc';fillOn(G,c,0,y,6+o,1);fillOn(G,c,W-6-o,y,6+o,1);fillOn(G,'#d7a3bb',6+o,y,1,1);fillOn(G,'#d7a3bb',W-7-o,y,1,1)}
@@ -276,7 +276,7 @@ function drawDoor(L,open,t){const d=L.door,x=DOOR.x;
 
 // ---------- game state ----------
 const BOUND={l:11,r:W-11,t:30,b:H-10};
-const STEP=500; // points needed for each set of doors
+const STEP=250; // points needed for each set of doors
 let S=null,running=false,paused=false,last=0;
 const L=()=>LEVELS[S.level-1];
 function newGame(){S={score:0,lives:3,time:0,level:1,p:{x:W/2,y:H-36,r:7,vx:0,vy:0,face:1,back:false,eat:0,inv:0,step:0},pops:[],shake:0,pause:0};startLevel();updHud()}
@@ -327,7 +327,7 @@ function banner(n,title){$('banner-n').textContent=n;$('banner-t').textContent=t
 function nextLevel(){S.level++;S.score+=100;S.lives=Math.min(3,S.lives+1);startLevel();S.pause=1.6;sfx.level();banner('LEVEL '+S.level+(L().final?' · THE LAST ONE':''),L().name)}
 
 // ---------- update ----------
-const LINES=[[0,"Not a single canapé. Were you even hungry?"],[50,"A light nibble. The chefs barely noticed."],[150,"Respectable. Ellie would like some left for the guests."],[300,"So close to the doors. One more go?"],[500,"Through the doors! The ceremony will never be the same."],[1000,"Out on the lawns, still eating. Impressive."],[1500,"The marquee has been cleared out."],[2000,"Dance floor legend. There is no food left at this wedding."]];
+const LINES=[[0,"Not a single canapé. Were you even hungry?"],[50,"A light nibble. The chefs barely noticed."],[100,"Respectable. Ellie would like some left for the guests."],[180,"So close to the doors. One more go?"],[250,"Through the doors! The ceremony will never be the same."],[500,"Out on the lawns, still eating. Impressive."],[750,"The marquee has been cleared out."],[1000,"Dance floor legend. There is no food left at this wedding."]];
 function update(dt){
  S.time+=dt;const p=S.p;
  if(S.pause>0){S.pause-=dt;return}
@@ -442,7 +442,7 @@ function go(){$('start').hidden=true;$('end').hidden=true;running=true;last=perf
 $('play').onclick=()=>{if(!paused){newGame();S.pause=1.2;banner('LEVEL 1',L().name)}paused=false;go()};
 $('again').onclick=()=>{newGame();S.pause=1.2;banner('LEVEL 1',L().name);go()};
 function gameOver(){running=false;stick=null;setKnob(0,0);render();
- $('end-title').textContent=S.score>=2000?'What a night!':'Caught!';
+ $('end-title').textContent=S.score>=1000?'What a night!':'Caught!';
  $('end-score').textContent=S.score.toLocaleString('en-GB');
  $('end-line').textContent=LINES.filter(l=>S.score>=l[0]).pop()[1];
  const q=qualifies(S.score);$('save').hidden=!q;showBoard('board-end');
