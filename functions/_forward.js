@@ -28,5 +28,10 @@ export async function forward(env, reply, extra = {}) {
 // Puts every guest's name in the sheet, so you can see who hasn't replied yet
 export async function syncGuests(env, guests) {
   const parties = guests.map((p) => ({ id: p.id, type: p.type, members: p.members.map((m) => ({ name: m.name, eveningOnly: !!m.eveningOnly })) }));
-  return forward(env, undefined, { action: "sync", guests: parties });
+  const out = await forward(env, undefined, { action: "sync", guests: parties });
+  // The older Google script doesn't know how to fill in the guest list
+  const OLD = "Your Google script is still the old version. Paste in the new Code.gs, then Deploy > Manage deployments > pencil > New version > Deploy.";
+  if (out.ok && out.added === undefined) return { ok: false, error: OLD };
+  if (!out.ok && /undefined|rows/.test(out.error || "")) return { ok: false, error: OLD };
+  return out;
 }
