@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Callum's canapés</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..900,100,1&family=Yellowtail&display=swap" rel="stylesheet">
+<style>
+/* A silly little arcade game for the guests. Same colours and fonts as the main site.
+   Five rooms: kitchen, ceremony, castle lawns, marquee, dance floor. Doors open every 500 points. */
+:root{--pink:#cc2d86;--red:#b0202a;--rose:#e86aa8;--blush:#f6d3e3;--ink:#5a1630;
+--serif:"Fraunces",Georgia,serif;--script:"Yellowtail","Brush Script MT",cursive}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--pink);color:#fff;font:16px/1.5 var(--serif);font-variation-settings:"SOFT" 100}
+body{min-height:100svh;display:flex;flex-direction:column;align-items:center;padding:calc(8px + env(safe-area-inset-top)) 10px calc(16px + env(safe-area-inset-bottom));overscroll-behavior:none}
+.top{width:100%;max-width:460px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.top a,.top button{color:#fff;font:700 15px var(--serif);text-decoration:none;background:rgba(255,255,255,.16);border:0;border-radius:999px;min-height:40px;padding:0 11px;display:inline-flex;align-items:center;cursor:pointer;flex:none}
+h1{font:400 clamp(26px,7.5vw,40px)/1 var(--script);margin:0;text-shadow:0 2px 0 var(--red);text-align:center;white-space:nowrap}
+@media(max-width:360px){.top a,.top button{font-size:14px;padding:0 9px}h1{font-size:24px}}
+/* the game shrinks on short phones so the thumb stick still fits on screen */
+.wrap{width:min(460px,100%,calc((100svh - 300px) * .75 + 28px));min-width:240px;margin-top:6px}
+.hud{display:flex;justify-content:space-between;font-weight:800;font-size:18px;padding:0 6px}
+.hud .lives{letter-spacing:2px}
+.goal{text-align:center;font-size:14px;font-weight:700;opacity:.95;margin:-2px 0 4px;min-height:21px}
+.goal.go{color:#ffe36b;animation:pulse .6s ease-in-out infinite alternate}
+@keyframes pulse{to{transform:scale(1.08)}}
+.frame{position:relative;background:#fff;padding:14px;border-radius:26px;box-shadow:0 7px 0 var(--red)}
+canvas#game{display:block;width:100%;aspect-ratio:3/4;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none;border-radius:6px;background:var(--blush);-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.banner{position:absolute;left:14px;right:14px;top:38%;text-align:center;background:rgba(90,22,48,.85);padding:10px 8px 14px;pointer-events:none;opacity:0;transition:opacity .3s}
+.banner.show{opacity:1}
+.banner small{display:block;font-weight:800;letter-spacing:.04em;font-size:14px}
+.banner b{display:block;font:400 38px/1 var(--script)}
+/* start, game over and pause screens cover the whole screen, like an arcade cabinet */
+.over{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:safe center;text-align:center;gap:10px;padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));background:rgba(204,45,134,.97);color:#fff;overflow-y:auto}
+.over[hidden]{display:none}
+.over h2{font:400 46px/1 var(--script);margin:0;text-shadow:0 3px 0 var(--red)}
+.over p{margin:0;max-width:32ch}
+.over .big{font:800 52px/1 var(--serif)}
+#hero{width:78px;height:114px;image-rendering:pixelated;image-rendering:crisp-edges}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:0 34px;border-radius:999px;background:#fff;color:var(--pink);font:800 20px var(--serif);border:0;cursor:pointer;box-shadow:0 5px 0 var(--red);margin-top:4px}
+.btn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.btn.small{min-height:48px;padding:0 22px;font-size:18px;margin:0}
+.link{background:none;border:0;color:#fff;font:700 15px var(--serif);text-decoration:underline;cursor:pointer;min-height:40px}
+/* scoreboard */
+.board-wrap{width:100%;max-width:340px;background:var(--ink);border-radius:16px;padding:12px 14px 10px;box-shadow:0 5px 0 var(--red)}
+.board-wrap h3{margin:0 0 6px;font:800 15px var(--serif);letter-spacing:.06em;text-transform:uppercase;color:#ffe36b}
+ol.board{list-style:none;margin:0;padding:0;font:700 16px/1.25 ui-monospace,"Courier New",monospace;counter-reset:r}
+ol.board li{display:grid;grid-template-columns:2.2em 1fr auto 4.2em;gap:6px;padding:4px 2px;border-top:1px dashed rgba(255,255,255,.2);counter-increment:r;text-align:left}
+ol.board li:first-child{border-top:0}
+ol.board li::before{content:counter(r) "."}
+ol.board li .lv{opacity:.7;font-size:13px;align-self:center}
+ol.board li .sc{text-align:right}
+ol.board li.me{color:#ffe36b}
+ol.board .empty{display:block;text-align:center;opacity:.75;font-family:var(--serif);font-weight:400}
+ol.board .empty::before{content:none}
+.board-note{font-size:13px;opacity:.75;margin-top:6px}
+form.save{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%;max-width:340px}
+form.save label{font-weight:700}
+form.save .row{display:flex;gap:8px;width:100%}
+form.save input{flex:1;min-width:0;min-height:48px;border-radius:12px;border:3px solid #fff;padding:0 12px;font:800 20px ui-monospace,"Courier New",monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--ink);background:#fff}
+form.save .name-msg{background:#fff;color:var(--red);font-weight:700;border-radius:10px;padding:6px 12px;font-size:15px}
+form.save .name-msg[hidden]{display:none}
+form.save input:focus{outline:3px solid #ffe36b;outline-offset:2px}
+/* thumb stick */
+.pad{position:relative;width:126px;height:126px;margin:16px auto 0;border-radius:50%;background:rgba(255,255,255,.18);border:4px solid rgba(255,255,255,.55);touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;flex:none}
+.pad::before{content:"";position:absolute;inset:16px;border-radius:50%;border:2px dashed rgba(255,255,255,.35)}
+.knob{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:#fff;box-shadow:0 4px 0 var(--red),inset 0 -6px 0 var(--blush);pointer-events:none}
+.how{max-width:460px;text-align:center;font-size:15px;opacity:.95;margin:14px 0 0}
+.touch-only{display:none}
+@media (pointer:coarse){.touch-only{display:inline}}
+@media (hover:hover) and (pointer:fine){.pad{display:none}}
+@media (prefers-reduced-motion:reduce){.goal.go{animation:none}}
+</style>
+</head>
+<body>
+<div class="top">
+  <a href="/">&larr; Back</a>
+  <h1>Callum's canapés</h1>
+  <button type="button" id="mute" aria-pressed="false">Sound</button>
+</div>
+<div class="wrap">
+  <div class="hud" aria-live="polite"><span>Score <span id="score">0</span></span><span class="lives" id="lives" aria-label="Lives"></span><span id="lvl">Level 1</span></div>
+  <div class="goal" id="goal">Doors open at 500</div>
+  <div class="frame">
+    <canvas id="game" width="168" height="224" aria-label="Game: move Callum to eat canapés and dodge the kitchen staff"></canvas>
+    <div class="banner" id="banner" aria-live="polite"><small id="banner-n">LEVEL 1</small><b id="banner-t">The reception</b></div>
+  </div>
+</div>
+<div class="pad" id="pad" aria-hidden="true"><div class="knob" id="knob"></div></div>
+<p class="how">Eat the canapés (10 points). Grab the cake and the staff run away, so bump them back to the kitchen for 50. Every 500 points the doors open to the next room. <span class="touch-only">Move with the thumb stick.</span> On a computer, use the arrow keys or WASD.</p>
+
+<div class="over" id="start">
+  <canvas id="hero" width="13" height="19" aria-hidden="true"></canvas>
+  <h2 id="start-title">Hungry?</h2>
+  <p id="start-text">Callum is loose at the wedding and going for the canapés. The kitchen staff are not happy. Reach 500 points to open the doors to the next room.</p>
+  <button class="btn" type="button" id="play">Play</button>
+  <div class="board-wrap"><h3>High scores</h3><ol class="board" id="board-start"></ol><div class="board-note" id="board-note-start"></div></div>
+</div>
+<div class="over" id="end" hidden>
+  <h2 id="end-title">Caught!</h2>
+  <div class="big" id="end-score">0</div>
+  <p id="end-line"></p>
+  <form class="save" id="save" hidden>
+    <label for="name">You made the scoreboard! Your name:</label>
+    <div class="row"><input id="name" maxlength="12" autocomplete="nickname" autocapitalize="characters" spellcheck="false" enterkeyhint="done"><button class="btn small" type="submit">Save</button></div>
+    <p class="name-msg" id="name-msg" role="alert" hidden>Keep it family friendly! Silly is fine, swearing isn't. Try another name.</p>
+  </form>
+  <div class="board-wrap"><h3>High scores</h3><ol class="board" id="board-end"></ol><div class="board-note" id="board-note-end"></div></div>
+  <button class="btn" type="button" id="again">Play again</button>
+</div>
+
+<script>
+(()=>{
+const cv=document.getElementById('game'),g=cv.getContext('2d');
+const W=168,H=224;
+g.imageSmoothingEnabled=false;
+const $=id=>document.getElementById(id);
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+// ---------- pixel art (each letter is one pixel colour) ----------
+const PAL={k:'#3a0f22',K:'#6e3346',s:'#f6c7a1',S:'#e3a47e',h:'#e0702c',H:'#b04e1a',e:'#d4631f',E:'#a9481a',n:'#26336a',w:'#ffffff',W:'#dcd3dc',p:'#e86aa8',P:'#cc2d86',r:'#b0202a',R:'#e0444f',b:'#9a5b2e',g:'#c9ced8',G:'#4f9a4a',y:'#ffd54a',o:'#e9b062',O:'#c47a2c',c:'#ff8f7a',m:'#ffe6f0',B:'#2a2a33',T:'#16161c',d:'#7a3a1a',L:'#8fb8ff',l:'#d6e6ff',x:'#f2f2f2',N:'#18214a'};
+// Callum: ginger hair and beard, black tux with a bow tie and a pink buttonhole
+const head=["....hhhhh....","...hhhhhhhh..","..hhhhhhhhhh.","..hHsssssHhh.","..hsssssssh..","..sskssskss..","..Sssssssss..","..eeSsssSee..","..eeerrreee..","...eeeeeee...","....eeeee...."];
+const headEat=head.map((r,i)=>i===8?"..eekRRRkee..":i===9?"...eekkkee...":r);
+const headBack=["....hhhhh....","...hhhhhhhh..","..hhhhhhhhhh.","..hhhhhhhhhh.","..hHhhhhhhHh.","..hHHhhhHHh..","..ehhhhhhhe..","..eesssssee..","...sssssss...","....sssss....","....sssss...."];
+const tux=["..TTTwwwTTT..",".TTTTkwkTTTT.",".TTTTwwwTTpT.",".sTTTTwTTTTs.",".s.TTTTTTT.s."];
+const tuxBack=["..TTTTTTTTT..",".TTTTTTTTTTT.",".TTTTTTTTTTT.",".sTTTTTTTTTs.",".s.TTTTTTT.s."];
+const tl={A:["...TTT.TTT...","...TTT.TTT...","...kkk.kkk..."],B:["...TTT.TTT...","..TTT...TTT..","..kkk...kkk.."],C:["...TTT.TTT...","...TTT..TTT.","...kkk...kkk."],D:["...TTT.TTT...",".TTT..TTT...",".kkk...kkk..."]};
+// disco: one arm pointing up at the ceiling
+function armUp(rows,side){const r=rows.map(x=>[...x.padEnd(13,'.')]),c=side>0?12:0,hc=side>0?11:1;
+ r[14][hc]='.';r[15][hc]='.';r[3][c]='s';r[4][c]='s';r[5][c]='w';for(let i=6;i<=12;i++)r[i][c]='T';r[12][hc]='T';return r.map(x=>x.join(''))}
+const SPR={
+ cA:head.concat(tux,tl.A),cB:head.concat(tux,tl.B),cEat:headEat.concat(tux,tl.A),
+ cUpR:armUp(head.concat(tux,tl.C),1),cUpL:armUp(head.concat(tux,tl.D),-1),
+ cBack:headBack.concat(tuxBack,tl.A),cBackB:headBack.concat(tuxBack,tl.B),
+ cBackUpR:armUp(headBack.concat(tuxBack,tl.C),1),cBackUpL:armUp(headBack.concat(tuxBack,tl.D),-1),
+ chefA:["...wwwwwww...","..wxwwwxwww..","..wwwwwwwxw..","...wwwwwww...","...WWWWWWW...","..sssssssss..","..skkssskks..","..sskssskss..","..rsssssssr..","..ssskkksss..","...sssssss...",".wwwwwkwwwwwb",".wwwwwwwwwwwb","swwwwwkwwwwsb","..wwwwwwwww.b","...BBB.BBB...","...BBB.BBB...","...kkk.kkk..."],
+ waiterA:["....BBBBB....","...BBBBBBB...","..BBBBBBBBB..","..BsssssssB..","..skkssskks..","..sskssskss..","..rsssssssr..","..sskkkkkss..","...sssssss...","gggggwrkrww..",".s.BBBwBBBB..",".s.BBBwBBBBs.","...BBBwBBBBs.","...BBBBBBBB..","...BBBBBBB...","...BBB.BBB...","...BBB.BBB...","...kkk.kkk..."],
+ volau:["..GyGyG..",".yyyyyyy.","OoooooooO","OoOoOoOoO","OoooooooO",".OOOOOOO."],
+ blini:["...cGc...","..ccccc..",".wwwwwww.","ooooooooo",".OOOOOOO."],
+ burger:["..ooooo..",".ooyoyoo.","ooooooooo","GGGGGGGGG","rrrrrrrrr","ddddddddd","ooooooooo",".OOOOOOO."],
+ sausage:[".oooooooo.","oyoyoyoyoo","oddddddddo","oooooooooo",".OOOOOOOO."],
+ skewer:["..R..",".RRR.","..y..",".yyy.",".yyy.","..G..",".GGG.","..b..","..b..","..b.."],
+ fizz:["w...w","wyyyw","wyyyw","wyyyw",".wyw.","..w..","..w..",".www."],
+ cake:[".....y.....",".....r.....","...wwwww...","..wpwpwpw..","..mmmmmmm..","..ppppppp..",".wwwwwwwww.",".wpwpwpwpw.",".mmmmmmmmm.",".ppppppppp.","ggggggggggg",".ggggggggg."]
+};
+// second walking frames for the staff
+SPR.chefB=SPR.chefA.slice(0,15).concat(["...BBB.BBB...","..BBB...BBB..","..kkk...kkk.."]);
+SPR.waiterB=SPR.waiterA.slice(0,15).concat(["...BBB.BBB...","..BBB...BBB..","..kkk...kkk.."]);
+const SCARED={w:'l',x:'l',W:'L',B:'L',k:'N',r:'s'};
+const cache={};
+function sprite(name,flip,tint){const key=name+(flip?'F':'')+(tint?'T':'');if(cache[key])return cache[key];
+ const rows=SPR[name],w=Math.max(...rows.map(r=>r.length)),h=rows.length,c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');
+ rows.forEach((r,j)=>[...r].forEach((ch,i)=>{if(tint&&tint[ch])ch=tint[ch];if(ch!=='.'&&PAL[ch]){x.fillStyle=PAL[ch];x.fillRect(flip?w-1-i:i,j,1,1)}}));return cache[key]=c}
+function draw(name,cx,cy,flip,tint,ctx=g){const s=sprite(name,flip,tint);ctx.drawImage(s,Math.round(cx-s.width/2),Math.round(cy-s.height/2))}
+// Callum's disco: point up right, step, point up left, step
+const DANCE=['cUpR','cB','cUpL','cA'],DANCE_BACK=['cBackUpR','cBackB','cBackUpL','cBack'];
+
+// ---------- sound (tiny beeps, can be muted) ----------
+let ac=null,muted=store.get('cc-muted')==='1';
+const muteBtn=$('mute');
+const showMute=()=>{muteBtn.textContent=muted?'Muted':'Sound';muteBtn.setAttribute('aria-pressed',muted);muteBtn.setAttribute('aria-label',muted?'Sound is off':'Sound is on')};showMute();
+muteBtn.onclick=()=>{muted=!muted;store.set('cc-muted',muted?'1':'0');showMute()};
+function beep(f1,f2,dur,type='square',vol=.06,delay=0){if(muted)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+ const o=ac.createOscillator(),v=ac.createGain(),t=ac.currentTime+delay;o.type=type;o.frequency.setValueAtTime(f1,t);o.frequency.exponentialRampToValueAtTime(f2,t+dur);
+ v.gain.setValueAtTime(vol,t);v.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(v);v.connect(ac.destination);o.start(t);o.stop(t+dur)}catch(e){}}
+const sfx={eat:()=>beep(500,900,.09),cake:()=>beep(400,1200,.25,'triangle',.08),bonk:()=>beep(900,300,.15),hit:()=>beep(300,60,.45,'sawtooth',.07),staff:()=>beep(200,150,.2,'square',.04),
+ doors:()=>[523,659,784,1047].forEach((f,i)=>beep(f,f,.16,'square',.05,i*.12)),level:()=>[392,523,659,784,659,784].forEach((f,i)=>beep(f,f*1.01,.14,'triangle',.07,i*.1))};
+
+// ---------- drawing helpers ----------
+const fillOn=(G,c,x,y,w,h)=>{G.fillStyle=c;G.fillRect(Math.round(x),Math.round(y),w,h)};
+const circOn=(G,cx,cy,r)=>{for(let y=-r;y<=r;y++){const w=Math.round(Math.sqrt(r*r-y*y));G.fillRect(Math.round(cx-w),Math.round(cy+y),w*2+1,1)}};
+let seed=1;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+function walls(G,col,line){for(let x=0;x<W;x++){const o=Math.round(3+2*Math.sin(x/7));fillOn(G,col,x,0,1,18+o);fillOn(G,line,x,18+o,1,1);fillOn(G,col,x,H-6-o,1,6+o);fillOn(G,line,x,H-7-o,1,1)}
+ for(let y=0;y<H;y++){const o=Math.round(2+2*Math.sin(y/7));fillOn(G,col,0,y,6+o,1);fillOn(G,line,6+o,y,1,1);fillOn(G,col,W-6-o,y,6+o,1);fillOn(G,line,W-7-o,y,1,1)}}
+function roundTable(G,t,cloth,edge){G.fillStyle='rgba(90,22,48,.16)';circOn(G,t.x+2,t.y+4,t.r+1);
+ G.fillStyle=cloth;circOn(G,t.x,t.y,t.r);for(let a=0;a<20;a++){const A=a/20*Math.PI*2;G.fillStyle=a%2?cloth:edge;circOn(G,t.x+Math.cos(A)*t.r,t.y+Math.sin(A)*t.r,2)}
+ G.fillStyle=PAL.m;circOn(G,t.x,t.y,t.r-4);G.fillStyle='#fff6fa';circOn(G,t.x-2,t.y-2,t.r-8);
+ for(let a=0;a<5;a++){const A=a/5*Math.PI*2+.3,px=t.x+Math.cos(A)*(t.r-8),py=t.y+Math.sin(A)*(t.r-8);G.fillStyle=PAL.W;circOn(G,px,py,2);G.fillStyle='#fff';circOn(G,px,py,1)}
+ fillOn(G,PAL.g,t.x-2,t.y-1,5,5);fillOn(G,PAL.G,t.x-2,t.y-5,1,4);fillOn(G,PAL.G,t.x+2,t.y-6,1,5);fillOn(G,PAL.G,t.x,t.y-7,1,6);
+ fillOn(G,PAL.r,t.x-3,t.y-7,2,2);fillOn(G,PAL.R,t.x+1,t.y-8,3,2);fillOn(G,PAL.r,t.x-1,t.y-9,2,2)}
+
+// ---------- the five rooms ----------
+const DOOR={x:W/2,y:22};
+const LEVELS=[
+ {name:'The kitchen',start:1,door:{frame:'#7d1420',panel:PAL.r,win:'#bfe3ff'},
+  circles:[],rects:[{x:20,y:36,w:34,h:13},{x:114,y:36,w:34,h:13},{x:52,y:92,w:64,h:20},{x:20,y:150,w:30,h:14},{x:118,y:150,w:30,h:14}],
+  bg(G){// pink and white floor tiles with grout lines
+   for(let y=0;y<H;y+=12)for(let x=0;x<W;x+=12){const pk=((x+y)/12)%2;fillOn(G,pk?'#f8d3e4':'#ffffff',x,y,12,12);fillOn(G,'#e9c2d3',x,y+11,12,1);fillOn(G,'#e9c2d3',x+11,y,1,12)}
+   walls(G,PAL.P,'#a51f68');
+   // pans and utensils hanging on the back wall
+   [[14,'#9aa1ad'],[26,'#b07a45'],[38,'#9aa1ad'],[130,'#9aa1ad'],[142,'#b07a45'],[154,'#9aa1ad']].forEach(([x,c],i)=>{fillOn(G,'#5a1630',x+2,3,1,4);if(i%3===1){fillOn(G,c,x+1,7,3,8);fillOn(G,c,x,14,5,3)}else{G.fillStyle=c;circOn(G,x+2,11,4);G.fillStyle='#6e7480';circOn(G,x+2,11,2)}});
+   const steel=(r)=>{fillOn(G,'rgba(60,20,40,.2)',r.x+2,r.y+3,r.w,r.h);fillOn(G,'#8e95a3',r.x,r.y,r.w,r.h);fillOn(G,'#c9ced8',r.x,r.y,r.w,r.h-3);fillOn(G,'#e8ebf0',r.x,r.y,r.w,1);fillOn(G,'#6e7480',r.x,r.y+r.h-1,r.w,1)};
+   const [s1,s2,isl,p1,p2]=this.rects;
+   // two stoves with glowing rings and a bubbling pot
+   [s1,s2].forEach((r,k)=>{steel(r);fillOn(G,'#2b2b33',r.x+2,r.y+1,r.w-4,r.h-5);
+    for(const bx of[r.x+8,r.x+r.w-8]){G.fillStyle='#e0444f';circOn(G,bx,r.y+4,3);G.fillStyle='#2b2b33';circOn(G,bx,r.y+4,1)}
+    const px=k?r.x+r.w-8:r.x+8;G.fillStyle='#6e7480';circOn(G,px,r.y+3,5);G.fillStyle='#c9ced8';circOn(G,px,r.y+3,4);G.fillStyle='#ffd54a';circOn(G,px,r.y+3,2);fillOn(G,'#3a3a44',px+5,r.y+2,4,1)});
+   // the island: chopping board, veg, a mixing bowl and trays of canapés waiting to go out
+   steel(isl);fillOn(G,'#b07a45',isl.x+4,isl.y+3,16,10);fillOn(G,'#c99a62',isl.x+5,isl.y+4,14,1);
+   fillOn(G,'#4f9a4a',isl.x+7,isl.y+6,3,3);fillOn(G,'#e0444f',isl.x+12,isl.y+7,3,3);fillOn(G,'#ffd54a',isl.x+16,isl.y+5,2,2);
+   fillOn(G,'#dcd3dc',isl.x+22,isl.y+8,12,1);fillOn(G,'#5a1630',isl.x+32,isl.y+7,4,3);
+   G.fillStyle='#ffffff';circOn(G,isl.x+46,isl.y+8,6);G.fillStyle='#f6d3e3';circOn(G,isl.x+46,isl.y+8,4);G.fillStyle='#ffe6f0';circOn(G,isl.x+45,isl.y+7,2);
+   fillOn(G,'#fff',isl.x+55,isl.y+3,6,1);
+   [p1,p2].forEach(r=>{steel(r);fillOn(G,'#e8ebf0',r.x+3,r.y+2,r.w-6,r.h-6);for(let x=r.x+5;x<r.x+r.w-5;x+=5)for(let y=r.y+3;y<r.y+r.h-5;y+=4)fillOn(G,[PAL.o,PAL.c,PAL.G][(x+y)%3],x,y,3,2)});
+   // a dropped tray, a puddle and a mop: the kitchen is in chaos
+   G.fillStyle='rgba(120,190,240,.45)';circOn(G,30,196,5);circOn(G,36,198,4);fillOn(G,'#b07a45',138,186,1,14);fillOn(G,'#e8ebf0',135,199,7,3)}},
+ {name:'The ceremony',start:2,door:{frame:'#b8913f',panel:'#f4efe6',win:'#fff4c2'},
+  circles:[],rects:[64,96,128,160].flatMap(y=>[{x:31,y,w:31,h:10},{x:106,y,w:31,h:10}]),
+  bg(G){seed=7;for(let y=0;y<H;y+=12){const off=(y/12)%2?8:0;for(let x=-16;x<W;x+=16){const v=rnd();fillOn(G,v<.2?'#d9cfc3':v<.5?'#e6ddd2':'#ece5dc',x+off,y,16,12);fillOn(G,'#cbbfb1',x+off,y,16,1);fillOn(G,'#cbbfb1',x+off,y,1,12)}}
+   fillOn(G,'#9e1b26',70,26,28,H);fillOn(G,PAL.r,72,26,24,H);fillOn(G,'#d9b45a',72,26,1,H);fillOn(G,'#d9b45a',95,26,1,H);
+   for(let i=0;i<40;i++)fillOn(G,rnd()<.5?PAL.p:'#fff',74+rnd()*20,40+rnd()*170,2,1);
+   walls(G,'#8d8279','#6b625a');
+   for(let x=8;x<W-8;x+=10)if(Math.abs(x-W/2)>24){fillOn(G,'#b0a79c',x,6,8,10);fillOn(G,'#6b625a',x,15,8,1)}
+   // arch of flowers around the door
+   for(let a=0;a<=14;a++){const A=Math.PI+a/14*Math.PI,x=DOOR.x+Math.cos(A)*24,y=26+Math.sin(A)*22;G.fillStyle=PAL.G;circOn(G,x,y,3);G.fillStyle=[PAL.p,PAL.w,PAL.r][a%3];circOn(G,x,y-1,2)}
+   [[30,20],[138,20]].forEach(([x,y])=>{fillOn(G,'#fff8e6',x,y,3,6);fillOn(G,PAL.y,x+1,y-2,1,2)});
+   // rows of chairs with pink bows on the aisle ends
+   this.rects.forEach(r=>{for(let x=r.x;x<r.x+r.w-4;x+=6){fillOn(G,'rgba(90,22,48,.15)',x+1,r.y+2,5,9);fillOn(G,'#f6eedf',x,r.y+3,5,6);fillOn(G,'#c9a45c',x,r.y,5,3);fillOn(G,'#e8d29a',x,r.y,5,1)}
+    const bx=r.x<W/2?r.x+r.w-3:r.x-1;fillOn(G,PAL.p,bx,r.y+2,3,3);fillOn(G,PAL.P,bx+1,r.y+5,1,3)})}},
+ {name:'The castle lawns',start:2,door:{frame:'#5e554c',panel:'#8a5a2b',win:null,arch:true},
+  circles:[{x:36,y:80,r:11},{x:132,y:80,r:11},{x:84,y:136,r:17}],rects:[{x:16,y:182,w:36,h:9},{x:116,y:182,w:36,h:9}],
+  bg(G){for(let x=0;x<W;x+=12)fillOn(G,(x/12)%2?'#86c060':'#79b354',x,0,12,H);
+   seed=3;for(let i=0;i<70;i++){const x=12+rnd()*(W-24),y=34+rnd()*(H-46);fillOn(G,['#ffffff',PAL.y,PAL.p][i%3],x,y,1,1);fillOn(G,'#5f9a43',x,y+1,1,1)}
+   // castle wall along the top, hedges down the sides
+   fillOn(G,'#a39a8f',0,0,W,26);for(let y=4;y<26;y+=6)for(let x=(y/6)%2?0:7;x<W;x+=14){fillOn(G,'#8d8378',x,y,14,1);fillOn(G,'#8d8378',x,y,1,6)}
+   for(let x=0;x<W;x+=12)fillOn(G,'#c4bcb2',x,0,7,4);fillOn(G,'#6b625a',0,26,W,2);
+   for(let y=26;y<H;y++){const o=Math.round(2+2*Math.sin(y/5));fillOn(G,'#3f7a35',0,y,8+o,1);fillOn(G,'#2f5e28',8+o,y,1,1);fillOn(G,'#3f7a35',W-8-o,y,8+o,1);fillOn(G,'#2f5e28',W-9-o,y,1,1)}
+   for(let x=0;x<W;x++){const o=Math.round(2+2*Math.sin(x/5));fillOn(G,'#3f7a35',x,H-6-o,1,6+o)}
+   // topiary trees, the fountain and two low hedges
+   this.circles.slice(0,2).forEach(t=>{G.fillStyle='rgba(30,60,20,.25)';circOn(G,t.x+2,t.y+4,t.r);G.fillStyle='#2f6e2c';circOn(G,t.x,t.y,t.r);G.fillStyle='#3f8a37';circOn(G,t.x-1,t.y-1,t.r-3);G.fillStyle='#5aa84c';circOn(G,t.x-3,t.y-3,t.r-7);fillOn(G,PAL.p,t.x+3,t.y-2,2,2);fillOn(G,PAL.w,t.x-4,t.y+3,2,2)});
+   const f=this.circles[2];G.fillStyle='rgba(30,60,20,.25)';circOn(G,f.x+2,f.y+4,f.r);G.fillStyle='#b9b2a8';circOn(G,f.x,f.y,f.r);G.fillStyle='#8fc8f0';circOn(G,f.x,f.y,f.r-4);G.fillStyle='#b9e1fb';circOn(G,f.x-2,f.y-2,f.r-9);G.fillStyle='#b9b2a8';circOn(G,f.x,f.y,4);G.fillStyle='#fff';circOn(G,f.x,f.y-1,2);
+   this.rects.forEach(r=>{fillOn(G,'rgba(30,60,20,.25)',r.x+2,r.y+3,r.w,r.h);fillOn(G,'#2f6e2c',r.x,r.y,r.w,r.h);fillOn(G,'#3f8a37',r.x+1,r.y+1,r.w-2,r.h-4);for(let x=r.x+3;x<r.x+r.w-2;x+=7)fillOn(G,PAL.p,x,r.y+2,2,2)})}},
+ {name:'The marquee',start:3,door:{frame:'#ffffff',panel:PAL.p,win:null,tent:true},
+  circles:[{x:34,y:122,r:14},{x:134,y:122,r:14},{x:84,y:102,r:14},{x:50,y:62,r:3},{x:118,y:62,r:3},{x:50,y:180,r:3},{x:118,y:180,r:3}],rects:[],
+  bg(G){for(let y=0;y<H;y+=8){fillOn(G,(y/8)%2?'#e9cb9c':'#e2c08d',0,y,W,8);fillOn(G,'#c9a26b',0,y+7,W,1);for(let x=((y/8)%3)*19;x<W;x+=57)fillOn(G,'#c9a26b',x,y,1,7)}
+   for(let x=0;x<W;x++){const o=Math.round(3+2*Math.sin(x/7)),c=(x/8|0)%2?'#ffffff':'#f7c6dc';fillOn(G,c,x,0,1,18+o);fillOn(G,'#d7a3bb',x,18+o,1,1);fillOn(G,c,x,H-6-o,1,6+o)}
+   for(let y=0;y<H;y++){const o=Math.round(2+2*Math.sin(y/7)),c=(y/8|0)%2?'#ffffff':'#f7c6dc';fillOn(G,c,0,y,6+o,1);fillOn(G,c,W-6-o,y,6+o,1);fillOn(G,'#d7a3bb',6+o,y,1,1);fillOn(G,'#d7a3bb',W-7-o,y,1,1)}
+   this.circles.slice(0,3).forEach(t=>roundTable(G,t,PAL.R,PAL.r));
+   this.circles.slice(3).forEach(t=>{G.fillStyle='rgba(90,22,48,.2)';circOn(G,t.x+1,t.y+2,t.r);G.fillStyle='#8a5a2b';circOn(G,t.x,t.y,t.r);fillOn(G,'#b07a45',t.x-1,t.y-2,1,2)})}},
+ {name:'The dance floor',start:3,final:true,door:{frame:'#111111',panel:'#3a3a48',win:'#ff6ac1'},
+  circles:[],rects:[{x:16,y:32,w:34,h:13},{x:118,y:32,w:34,h:13}],
+  bg(G){fillOn(G,'#2a0f33',0,0,W,H);walls(G,'#4a1a52','#7a2b86');
+   for(let x=8;x<W-8;x+=9)fillOn(G,['#ff6ac1','#ffe36b','#6ad7ff'][(x/9|0)%3],x,8,2,2)}}
+];
+LEVELS.forEach(L=>{L.cv=document.createElement('canvas');L.cv.width=W;L.cv.height=H;L.bg(L.cv.getContext('2d'))});
+const TILE=['#ff4fa8','#ffd54a','#5fd0ff','#b06aff','#ff7a4f'];
+function drawDanceFloor(t){
+ for(let j=0;j<10;j++)for(let i=0;i<8;i++){const on=(i*3+j*5+Math.floor(t*3))%4===0||(i+j+Math.floor(t*2))%5===0,c=TILE[(i+j+Math.floor(t*1.5))%5];
+  fillOn(g,on?c:'#3a1745',16+i*17,48+j*16,16,15);if(on)fillOn(g,'rgba(255,255,255,.35)',17+i*17,49+j*16,14,2)}
+ const L=LEVELS[4];
+ // DJ booth and speakers
+ L.rects.forEach((r,k)=>{fillOn(g,'rgba(0,0,0,.35)',r.x+2,r.y+3,r.w,r.h);fillOn(g,'#15151b',r.x,r.y,r.w,r.h);fillOn(g,'#2c2c38',r.x+1,r.y+1,r.w-2,3);
+  if(k===0){g.fillStyle='#55556a';circOn(g,r.x+9,r.y+7,4);circOn(g,r.x+25,r.y+7,4);g.fillStyle='#111';circOn(g,r.x+9,r.y+7,1);circOn(g,r.x+25,r.y+7,1);fillOn(g,TILE[Math.floor(t*4)%5],r.x+15,r.y+4,4,2)}
+  else{for(const cx of[r.x+8,r.x+25]){g.fillStyle='#55556a';circOn(g,cx,r.y+7,5);g.fillStyle='#22222a';circOn(g,cx,r.y+7,3+Math.round(Math.sin(t*16)*.6))}}})}
+function drawDiscoBall(t){
+ const x=84,y=120;
+ for(let k=0;k<6;k++){const a=t*.8+k*1.05,bx=x+Math.cos(a)*(40+15*Math.sin(t+k)),by=y+Math.sin(a)*(50+10*Math.cos(t*1.3+k));g.fillStyle='rgba(255,255,255,.22)';circOn(g,bx,by,5);g.fillStyle='rgba(255,255,255,.35)';circOn(g,bx,by,2)}
+ fillOn(g,'#888',x,0,1,y-6-0);g.fillStyle='#9aa0ad';circOn(g,x,y-12,6);
+ for(let j=-6;j<=6;j+=2)for(let i=-6;i<=6;i+=2)if(i*i+j*j<=30&&(i+j+Math.floor(t*6))%4===0)fillOn(g,'#ffffff',x+i,y-12+j,1,1)}
+function drawLights(t){for(const y0 of[48,110,172]){for(let x=10;x<W-10;x+=8){const y=y0+Math.round(6*Math.sin((x-10)/(W-20)*Math.PI)),on=(x/8+Math.floor(t*3))%3;fillOn(g,'rgba(90,60,40,.35)',x,y-1,8,1);fillOn(g,on?'#fff3b0':'#ffd54a',x+3,y,2,2)}}}
+function drawDoor(L,open,t){const d=L.door,x=DOOR.x;
+ if(d.arch){g.fillStyle=d.frame;circOn(g,x,12,19);fillOn(g,d.frame,x-19,12,38,16)}else fillOn(g,d.frame,x-19,3,38,25);
+ if(open){fillOn(g,'#1c0710',x-17,5,34,23);if(d.arch){g.fillStyle='#1c0710';circOn(g,x,13,17)}
+  fillOn(g,'rgba(255,220,120,.25)',x-17,18,34,10);fillOn(g,'rgba(255,220,120,.18)',x-15,28,30,6);
+  fillOn(g,d.panel,x-19,5,3,23);fillOn(g,d.panel,x+16,5,3,23);
+  if(Math.floor(t*4)%2)fillOn(g,'#ffe36b',x-19,3,38,1);
+  const b=Math.round(Math.sin(t*6)*2);g.fillStyle='#ffe36b';for(let i=0;i<6;i++)fillOn(g,'#ffe36b',x-i,36+i+b,i*2+1,1);fillOn(g,'#ffe36b',x-2,42+b,5,5)}
+ else if(d.arch){g.fillStyle=d.panel;circOn(g,x,13,17);fillOn(g,d.panel,x-17,13,34,15);for(let i=-14;i<=14;i+=5)fillOn(g,'#6b431f',x+i,2,1,26);fillOn(g,'#3a2a1a',x-17,16,34,2);fillOn(g,PAL.y,x+5,19,2,2)}
+ else if(d.tent){for(let i=0;i<23;i++){fillOn(g,(i>>2)%2?'#ffffff':d.panel,x-17+i*0,5+i,17-Math.floor(i*.4),1);fillOn(g,(i>>2)%2?'#ffffff':d.panel,x+Math.floor(i*.4),5+i,17-Math.floor(i*.4),1)}fillOn(g,'#1c0710',x-1,5,2,23)}
+ else{fillOn(g,d.panel,x-17,5,16,23);fillOn(g,d.panel,x+1,5,16,23);fillOn(g,d.frame,x,5,1,23);
+  if(d.win){g.fillStyle=d.frame;circOn(g,x-9,13,4);circOn(g,x+9,13,4);g.fillStyle=d.win;circOn(g,x-9,13,3);circOn(g,x+9,13,3);fillOn(g,'#ffffff',x-11,11,2,1);fillOn(g,'#ffffff',x+7,11,2,1)}
+  fillOn(g,'#e9c46a',x-4,18,2,3);fillOn(g,'#e9c46a',x+3,18,2,3)}}
+
+// ---------- game state ----------
+const BOUND={l:11,r:W-11,t:30,b:H-10};
+const STEP=500; // points needed for each set of doors
+let S=null,running=false,paused=false,last=0;
+const L=()=>LEVELS[S.level-1];
+function newGame(){S={score:0,lives:3,time:0,level:1,p:{x:W/2,y:H-36,r:7,vx:0,vy:0,face:1,back:false,eat:0,inv:0,step:0},pops:[],shake:0,pause:0};startLevel();updHud()}
+function startLevel(){const p=S.p;Object.assign(p,{x:W/2,y:H-36,vx:0,vy:0,inv:1});
+ Object.assign(S,{pops:[],staff:[],food:[],cake:null,cakeTimer:10,sugar:0,eaten:0,ltime:0,open:false,nextStaff:[4,10,18,28,40]});
+ for(let i=0;i<L().start;i++)addStaff(i%2?'waiter':'chef',.8+i*1.2);
+ const n=S.level>=4?4:3;for(let i=0;i<n;i++)addFood();updHud()}
+function addStaff(kind,wait=.6){S.staff.push({kind,x:DOOR.x+(Math.random()*16-8),y:DOOR.y+14,r:7,vx:0,vy:0,step:0,wait,home:0,face:1,side:0,sideT:0});sfx.staff()}
+function hitsRect(x,y,r,R){const cx=Math.max(R.x,Math.min(R.x+R.w,x)),cy=Math.max(R.y,Math.min(R.y+R.h,y));return Math.hypot(x-cx,y-cy)<r}
+function free(x,y,r){if(x<BOUND.l+r||x>BOUND.r-r||y<BOUND.t+r||y>BOUND.b-r)return false;const lv=L();return lv.circles.every(t=>Math.hypot(x-t.x,y-t.y)>t.r+r+3)&&lv.rects.every(R=>!hitsRect(x,y,r+3,R))}
+function addFood(){const kinds=['volau','blini','burger','sausage','skewer'].concat(S.level>=3?['fizz']:[]);
+ for(let i=0;i<120;i++){const x=18+Math.random()*(W-36),y=44+Math.random()*(H-60);
+ if(free(x,y,7)&&Math.hypot(x-S.p.x,y-S.p.y)>40&&S.food.every(f=>Math.hypot(x-f.x,y-f.y)>28)){S.food.push({x,y,kind:kinds[Math.floor(Math.random()*kinds.length)],t:Math.random()*6});return}}}
+function placeCake(){for(let i=0;i<120;i++){const x=18+Math.random()*(W-36),y=50+Math.random()*(H-70);if(free(x,y,9)&&Math.hypot(x-S.p.x,y-S.p.y)>60){S.cake={x,y,life:7};return}}}
+function updHud(){$('score').textContent=S.score.toLocaleString('en-GB');$('lives').textContent='♥'.repeat(S.lives)+'♡'.repeat(3-S.lives);$('lives').setAttribute('aria-label',S.lives+' lives left');$('lvl').textContent='Level '+S.level;
+ const goal=$('goal');goal.classList.toggle('go',S.open);
+ goal.textContent=L().final?'The last room! How long can you last?':S.open?'The doors are open! Go!':'Doors open at '+(S.level*STEP).toLocaleString('en-GB')}
+function collide(o){o.x=Math.max(BOUND.l+o.r,Math.min(BOUND.r-o.r,o.x));o.y=Math.max(BOUND.t+o.r,Math.min(BOUND.b-o.r,o.y));const lv=L();
+ lv.circles.forEach(t=>{const dx=o.x-t.x,dy=o.y-t.y,d=Math.hypot(dx,dy)||1,m=t.r+o.r;if(d<m){o.x=t.x+dx/d*m;o.y=t.y+dy/d*m}});
+ lv.rects.forEach(R=>{const cx=Math.max(R.x,Math.min(R.x+R.w,o.x)),cy=Math.max(R.y,Math.min(R.y+R.h,o.y)),dx=o.x-cx,dy=o.y-cy,d=Math.hypot(dx,dy);
+  if(d>0&&d<o.r){o.x=cx+dx/d*o.r;o.y=cy+dy/d*o.r}
+  else if(d===0){const opts=[[R.x-o.r-o.x,0],[R.x+R.w+o.r-o.x,0],[0,R.y-o.r-o.y],[0,R.y+R.h+o.r-o.y]].sort((a,b)=>Math.abs(a[0]+a[1])-Math.abs(b[0]+b[1]))[0];o.x+=opts[0];o.y+=opts[1]}})}
+
+// ---------- controls ----------
+const keys=new Set();
+const typing=()=>['INPUT','BUTTON'].includes(document.activeElement.tagName);
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();if(document.activeElement.tagName==='INPUT')return;
+ if(['arrowup','arrowdown','arrowleft','arrowright','w','a','s','d'].includes(k)){keys.add(k);if(running)e.preventDefault()}
+ if((k===' '||k==='enter')&&!running&&!typing()){e.preventDefault();(!$('start').hidden?$('play'):$('again')).click()}});
+addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
+const pad=$('pad'),knob=$('knob');let stick=null;
+const setKnob=(x,y)=>{knob.style.transform=`translate(${x}px,${y}px)`};
+function stickMove(e){const b=pad.getBoundingClientRect(),R=b.width/2-14;let dx=e.clientX-(b.left+b.width/2),dy=e.clientY-(b.top+b.height/2);const d=Math.hypot(dx,dy);if(d>R){dx=dx/d*R;dy=dy/d*R}
+ setKnob(dx,dy);stick={id:e.pointerId,x:dx/R,y:dy/R}}
+pad.addEventListener('pointerdown',e=>{e.preventDefault();pad.setPointerCapture(e.pointerId);stickMove(e)});
+pad.addEventListener('pointermove',e=>{if(stick&&e.pointerId===stick.id)stickMove(e)});
+const endStick=e=>{if(stick&&e.pointerId===stick.id){stick=null;setKnob(0,0)}};
+pad.addEventListener('pointerup',endStick);pad.addEventListener('pointercancel',endStick);
+[pad,cv].forEach(el=>el.addEventListener('contextmenu',e=>e.preventDefault()));
+function input(){let x=0,y=0;
+ if(keys.has('arrowleft')||keys.has('a'))x--;if(keys.has('arrowright')||keys.has('d'))x++;if(keys.has('arrowup')||keys.has('w'))y--;if(keys.has('arrowdown')||keys.has('s'))y++;
+ if(stick){const d=Math.hypot(stick.x,stick.y);if(d>.15){x=stick.x;y=stick.y}}
+ const d=Math.hypot(x,y);if(d>1){x/=d;y/=d}return{x,y}}
+
+// ---------- level banner ----------
+let bannerT=0;
+function banner(n,title){$('banner-n').textContent=n;$('banner-t').textContent=title;$('banner').classList.add('show');clearTimeout(bannerT);bannerT=setTimeout(()=>$('banner').classList.remove('show'),1900)}
+function nextLevel(){S.level++;S.score+=100;S.lives=Math.min(3,S.lives+1);startLevel();S.pause=1.6;sfx.level();banner('LEVEL '+S.level+(L().final?' · THE LAST ONE':''),L().name)}
+
+// ---------- update ----------
+const LINES=[[0,"Not a single canapé. Were you even hungry?"],[50,"A light nibble. The chefs barely noticed."],[150,"Respectable. Ellie would like some left for the guests."],[300,"So close to the doors. One more go?"],[500,"Through the doors! The ceremony will never be the same."],[1000,"Out on the lawns, still eating. Impressive."],[1500,"The marquee has been cleared out."],[2000,"Dance floor legend. There is no food left at this wedding."]];
+function update(dt){
+ S.time+=dt;const p=S.p;
+ if(S.pause>0){S.pause-=dt;return}
+ S.ltime+=dt;
+ const i=input(),sp=80*(S.sugar>0?1.15:1);
+ p.vx+=(i.x*sp-p.vx)*Math.min(1,dt*14);p.vy+=(i.y*sp-p.vy)*Math.min(1,dt*14);
+ p.x+=p.vx*dt;p.y+=p.vy*dt;collide(p);
+ if(Math.hypot(p.vx,p.vy)>14){p.step+=dt*7;if(Math.abs(p.vx)>6)p.face=p.vx>0?1:-1;p.back=p.vy<-30&&Math.abs(p.vy)>Math.abs(p.vx)}
+ p.eat=Math.max(0,p.eat-dt);p.inv=Math.max(0,p.inv-dt);
+ // through the open doors to the next room
+ if(S.open&&p.y<=BOUND.t+p.r+2&&Math.abs(p.x-DOOR.x)<17){nextLevel();return}
+ S.food.forEach(f=>f.t+=dt);
+ for(let k=S.food.length-1;k>=0;k--){const f=S.food[k];if(Math.hypot(f.x-p.x,f.y-p.y)<14){S.food.splice(k,1);S.score+=10;S.eaten++;p.eat=.25;sfx.eat();S.pops.push({x:f.x,y:f.y-8,t:.7,txt:'+10'});addFood();
+  if(S.nextStaff.length&&S.eaten>=S.nextStaff[0]){S.nextStaff.shift();addStaff(S.staff.length%2?'waiter':'chef')}updHud()}}
+ if(S.cake){S.cake.life-=dt;if(S.cake.life<=0)S.cake=null;else if(Math.hypot(S.cake.x-p.x,S.cake.y-p.y)<16){S.cake=null;S.sugar=6;S.score+=25;S.pops.push({x:p.x,y:p.y-18,t:1,txt:'CAKE!'});sfx.cake();updHud()}}
+ else{S.cakeTimer-=dt;if(S.cakeTimer<=0){placeCake();S.cakeTimer=16+Math.random()*8}}
+ S.sugar=Math.max(0,S.sugar-dt);
+ if(!S.open&&!L().final&&S.score>=S.level*STEP){S.open=true;sfx.doors();S.pops.push({x:DOOR.x,y:56,t:1.6,txt:'DOORS OPEN!'});updHud()}
+ const hurry=(1+Math.min(.45,S.ltime/150))*(1+.07*(S.level-1));
+ S.staff.forEach(s=>{
+  if(s.wait>0){s.wait-=dt;return}
+  if(s.home>0){const dx=DOOR.x-s.x,dy=DOOR.y+12-s.y,d=Math.hypot(dx,dy);if(d<5){s.home=0;s.wait=1.2}else{s.x+=dx/d*130*dt;s.y+=dy/d*130*dt}return}
+  let tx=p.x,ty=p.y;if(s.kind==='waiter'){tx+=p.vx*.5;ty+=p.vy*.5}
+  let dx=tx-s.x,dy=ty-s.y,d=Math.hypot(dx,dy)||1;if(S.sugar>0){dx=-dx;dy=-dy}
+  dx/=d;dy/=d;
+  // stuck behind a table or chairs? edge round it
+  if(s.sideT>0){s.sideT-=dt;const nx=dx*.35-dy*s.side,ny=dy*.35+dx*s.side,m=Math.hypot(nx,ny)||1;dx=nx/m;dy=ny/m}
+  const base=(s.kind==='waiter'?56:47)*hurry*(S.sugar>0?.6:1),turn=s.kind==='waiter'?2.2:5;
+  s.vx+=(dx*base-s.vx)*Math.min(1,dt*turn);s.vy+=(dy*base-s.vy)*Math.min(1,dt*turn);
+  const bx=s.x,by=s.y;s.x+=s.vx*dt;s.y+=s.vy*dt;collide(s);
+  if(s.sideT<=0&&Math.hypot(s.x-bx,s.y-by)<base*dt*.3&&d>16){s.side=Math.random()<.5?1:-1;s.sideT=.7}
+  s.step+=dt*7;if(Math.abs(s.vx)>5)s.face=s.vx>0?1:-1});
+ for(let a=0;a<S.staff.length;a++)for(let b=a+1;b<S.staff.length;b++){const A=S.staff[a],B=S.staff[b];if(A.home||B.home)continue;const dx=B.x-A.x,dy=B.y-A.y,d=Math.hypot(dx,dy)||1;if(d<14){const m=(14-d)/2;A.x-=dx/d*m;A.y-=dy/d*m;B.x+=dx/d*m;B.y+=dy/d*m}}
+ for(const s of S.staff){if(s.home||s.wait>0)continue;if(Math.hypot(s.x-p.x,s.y-p.y)<12){
+  if(S.sugar>0){s.home=1;S.score+=50;S.pops.push({x:s.x,y:s.y-16,t:.9,txt:'+50'});sfx.bonk();updHud()}
+  else if(p.inv<=0){S.lives--;sfx.hit();S.shake=.35;updHud();
+   if(S.lives<=0){gameOver();return}
+   p.inv=2;S.pause=.8;S.pops.push({x:p.x,y:p.y-18,t:1.2,txt:'OI!'});S.staff.forEach(o=>{o.home=1});break}}}
+ S.pops.forEach(o=>{o.t-=dt;o.y-=dt*18});S.pops=S.pops.filter(o=>o.t>0);
+ S.shake=Math.max(0,S.shake-dt);
+}
+
+// ---------- draw ----------
+function txt(s,x,y,col){g.font='bold 12px monospace';g.textAlign='center';g.fillStyle=PAL.k;g.fillText(s,x+1,y+1);g.fillStyle=col;g.fillText(s,x,y)}
+const shadow=(x,y,w)=>{g.fillStyle='rgba(40,10,30,.22)';g.fillRect(Math.round(x-w/2),Math.round(y),w,2)};
+function callumFrame(p,t){const moving=Math.hypot(p.vx,p.vy)>14;
+ if(p.eat>0&&!p.back)return'cEat';
+ if(!moving)return p.back?'cBack':(Math.floor(t*1.5)%2?'cA':'cA');
+ return (p.back?DANCE_BACK:DANCE)[Math.floor(p.step)%4]}
+function render(){
+ const t=S?S.time:0,lv=S?L():LEVELS[0];
+ g.save();if(S&&S.shake>0)g.translate(Math.round((Math.random()-.5)*6),Math.round((Math.random()-.5)*6));
+ g.drawImage(lv.cv,0,0);
+ if(lv.final)drawDanceFloor(t);
+ drawDoor(lv,S&&S.open,t);
+ if(!S){g.restore();return}
+ const list=[];
+ S.food.forEach(f=>list.push({y:f.y,d:()=>{const bob=Math.round(Math.sin(f.t*4)*1.5);shadow(f.x,f.y+6,10);draw(f.kind,f.x,f.y+bob)}}));
+ if(S.cake&&(S.cake.life>2||Math.floor(S.cake.life*8)%2))list.push({y:S.cake.y,d:()=>{shadow(S.cake.x,S.cake.y+7,12);draw('cake',S.cake.x,S.cake.y+Math.round(Math.sin(t*5)*1.5));
+  for(let j=0;j<3;j++){const a=t*4+j*2.1;fillOn(g,PAL.y,S.cake.x+Math.cos(a)*12,S.cake.y+Math.sin(a)*12,2,2)}}});
+ S.staff.forEach(s=>list.push({y:s.y,d:()=>{
+  const scared=S.sugar>0&&!s.home,frame=Math.floor(s.step)%2,flash=scared&&S.sugar<1.5&&Math.floor(t*8)%2;
+  if(s.home)g.globalAlpha=.45;
+  shadow(s.x,s.y+9,11);draw(s.kind+(frame?'B':'A'),s.x,s.y,s.face<0,scared&&!flash?SCARED:null);g.globalAlpha=1;
+  if(!scared&&!s.home&&s.wait<=0&&Math.floor(t*3+s.x/8)%4===0){fillOn(g,PAL.R,s.x+7,s.y-16,2,5);fillOn(g,PAL.R,s.x+7,s.y-9,2,2)}
+  if(scared&&!flash){const a=t*6;fillOn(g,PAL.y,s.x+Math.cos(a)*6,s.y-12+Math.sin(a)*2,2,2)}}}));
+ const p=S.p;list.push({y:p.y,d:()=>{if(p.inv>0&&S.pause<=0&&Math.floor(p.inv*10)%2)return;
+  const name=callumFrame(p,t),hop=name.includes('Up')?-1:0;
+  shadow(p.x,p.y+9,11);draw(name,p.x,p.y+hop,false);
+  // music notes and sparkles while he dances
+  if(Math.hypot(p.vx,p.vy)>14){const k=Math.floor(t*3)%2;fillOn(g,k?PAL.P:PAL.y,p.x+(k?9:-11),p.y-14-((t*20)%6),2,2);fillOn(g,k?PAL.P:PAL.y,p.x+(k?11:-9),p.y-17-((t*20)%6),1,4)}
+  if(S.sugar>0){fillOn(g,Math.floor(t*10)%2?PAL.y:PAL.p,p.x-10,p.y-12,2,2);fillOn(g,Math.floor(t*10)%2?PAL.p:PAL.y,p.x+9,p.y-8,2,2)}}});
+ list.sort((a,b)=>a.y-b.y).forEach(o=>o.d());
+ if(S.level===4)drawLights(t);
+ if(lv.final)drawDiscoBall(t);
+ S.pops.forEach(o=>txt(o.txt,Math.round(o.x),Math.round(o.y),o.txt==='OI!'?'#fff':PAL.y));
+ if(S.sugar>0){fillOn(g,PAL.k,W/2-40,H-18,80,6);fillOn(g,PAL.y,W/2-39,H-17,Math.round(78*S.sugar/6),4)}
+ g.restore();
+}
+
+// ---------- scoreboard (shared on the real site, this device only in previews) ----------
+let board=[],shared=false;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const cleanName=s=>String(s||'').normalize('NFC').toUpperCase().replace(/[^\p{L}\p{N} '.-]/gu,'').replace(/\s+/g,' ').trim().slice(0,12)||'GUEST';
+function showBoard(id,me){const el=$(id),list=board.slice(0,id==='board-start'?5:10);
+ el.innerHTML=list.length?list.map((r,i)=>`<li class="${me&&r.at===me.at&&r.name===me.name?'me':''}"><span>${esc(r.name)}</span><span class="lv">L${Number(r.level)||1}</span><span class="sc">${(Number(r.score)||0).toLocaleString('en-GB')}</span></li>`).join(''):'<li class="empty">No scores yet. Be the first!</li>';
+ $(id.replace('board','board-note')).textContent=shared?'':'Scores on this device only.'}
+async function loadBoard(){try{const r=await fetch('/api/scores',{cache:'no-store',credentials:'same-origin'});if(!r.ok)throw 0;const j=await r.json();if(!j.shared)throw 0;board=j.scores||[];shared=true}
+ catch(e){shared=false;try{board=JSON.parse(store.get('cc-board')||'[]')}catch(_){board=[]}}showBoard('board-start');showBoard('board-end')}
+// no swearing on the scoreboard (same check as functions/_names.js on the server)
+const squash=(s) => String(s || "").toLowerCase()
+  .replace(/[0@4]/g, (c) => ({ 0: "o", "@": "a", 4: "a" })[c]).replace(/[1!|]/g, "i").replace(/3/g, "e").replace(/[5$]/g, "s").replace(/7/g, "t").replace(/8/g, "b")
+  .replace(/[^a-z]/g, "").replace(/(.)\1+/g, "$1");
+const ANYWHERE = ["fuck", "fuk", "fck", "fcuk", "phuck", "shit", "cunt", "twat", "bitch", "bastard", "bollock", "arsehole", "asshole", "dickhead",
+  "motherf", "slut", "whore", "nigga", "faggot", "retard", "piss", "bellend", "tosser", "dildo", "nazi", "spastic", "wanker"].map(squash);
+const WHOLE = ["cock", "prick", "tit", "tits", "spunk", "cum", "jizz", "slag", "pussy", "fag", "wank", "knobhead", "nob", "minge", "clit", "porn", "sex", "anal",
+  "rape", "rapist", "paki", "kike", "chink", "nigger", "spaz"].map(squash);
+const isRude=name=>{const all=squash(name);if(ANYWHERE.some(w=>all.includes(w)))return true;const words=String(name||'').split(/[\s'.-]+/).map(squash).filter(Boolean);return words.some(w=>WHOLE.includes(w))||WHOLE.includes(all)};
+const qualifies=sc=>sc>0&&sc%5===0&&(board.length<10||sc>board[Math.min(board.length,10)-1].score);
+async function saveScore(name){const entry={name:cleanName(name),score:S.score,level:S.level,at:new Date().toISOString()};store.set('cc-name',entry.name);
+ if(shared){try{const r=await fetch('/api/scores',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify(entry)});if(r.status===400){const j=await r.json().catch(()=>({}));if(j.error==='rude')return 'rude'}if(!r.ok)throw 0;const j=await r.json();board=j.scores;const me=board.find(x=>x.name===entry.name&&x.score===entry.score);showBoard('board-end',me);showBoard('board-start');return}catch(e){shared=false}}
+ board=board.concat(entry).sort((a,b)=>b.score-a.score).slice(0,10);store.set('cc-board',JSON.stringify(board));showBoard('board-end',entry);showBoard('board-start')}
+$('name').addEventListener('input',()=>{$('name-msg').hidden=true});
+$('save').addEventListener('submit',async e=>{e.preventDefault();const v=$('name').value;
+ if(isRude(v)||isRude(cleanName(v))){$('name-msg').hidden=false;$('name').focus();return}
+ const b=e.submitter||$('save').querySelector('button');b.disabled=true;b.textContent='Saving…';
+ const res=await saveScore(v);b.disabled=false;b.textContent='Save';if(res==='rude'){$('name-msg').hidden=false;return}$('save').hidden=true;b.disabled=false;b.textContent='Save';$('again').focus()});
+
+// ---------- loop ----------
+function frame(t){if(!running)return;const dt=Math.min(.05,(t-last)/1000||0);last=t;update(dt);if(running)render();if(running)requestAnimationFrame(frame)}
+function go(){$('start').hidden=true;$('end').hidden=true;running=true;last=performance.now();try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();ac.resume()}catch(e){}requestAnimationFrame(frame)}
+$('play').onclick=()=>{if(!paused){newGame();S.pause=1.2;banner('LEVEL 1',L().name)}paused=false;go()};
+$('again').onclick=()=>{newGame();S.pause=1.2;banner('LEVEL 1',L().name);go()};
+function gameOver(){running=false;stick=null;setKnob(0,0);render();
+ $('end-title').textContent=S.score>=2000?'What a night!':'Caught!';
+ $('end-score').textContent=S.score.toLocaleString('en-GB');
+ $('end-line').textContent=LINES.filter(l=>S.score>=l[0]).pop()[1];
+ const q=qualifies(S.score);$('save').hidden=!q;showBoard('board-end');
+ $('end').hidden=false;
+ if(q){$('name').value=store.get('cc-name')||'';setTimeout(()=>$('name').focus({preventScroll:true}),50)}else $('again').focus();
+ loadBoard().then(()=>{if(!$('save').hidden&&!qualifies(S.score))$('save').hidden=true})}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&running){running=false;paused=true;keys.clear();stick=null;setKnob(0,0);
+ $('start-title').textContent='Paused';$('start-text').textContent='Back for seconds?';$('play').textContent='Carry on';$('start').hidden=false}});
+// Callum dancing on the start screen
+const hero=$('hero').getContext('2d');let hf=0;
+setInterval(()=>{if($('start').hidden)return;hero.clearRect(0,0,13,19);draw(DANCE[hf++%4],6.5,9.5,false,null,hero)},260);
+draw('cA',6.5,9.5,false,null,hero);
+newGame();render();loadBoard();
+})();
+</script>
+</body>
+</html>
