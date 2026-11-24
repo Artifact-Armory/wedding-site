@@ -162,6 +162,13 @@ a{color:var(--red);text-decoration-thickness:2px;text-underline-offset:3px}
 .btn:hover{transform:translateY(-1px)}.btn:focus-visible{outline:3px solid var(--red);outline-offset:3px}
 .btn[disabled]{opacity:.65;cursor:not-allowed;transform:none}
 
+/* game section */
+.game-seg{max-width:760px;text-align:center;background:var(--ink);color:#fff}
+.game-seg .script{font-size:clamp(38px,8vw,54px);color:#fff}
+.game-seg canvas{display:block;width:100%;height:auto;aspect-ratio:220/34;margin:18px 0 22px;image-rendering:pixelated;image-rendering:crisp-edges;border-radius:6px;box-shadow:0 0 0 4px #fff,0 6px 0 4px var(--red)}
+.game-seg p{max-width:44ch;margin:0 auto 22px}
+.game-seg .btn{background:#fff;color:var(--pink)}
+
 footer{position:relative;text-align:center;color:#fff;padding:clamp(70px,12vw,110px) 16px clamp(260px,42vw,420px);margin-top:20px;
  background:linear-gradient(var(--pink),rgba(204,45,134,.35) 40%,rgba(204,45,134,0) 70%),var(--footer-img,url(img/beach.jpg)) 58% 75%/cover no-repeat}
 footer .mono{font:800 44px var(--serif);color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.25)}
@@ -264,6 +271,15 @@ footer .play{display:inline-flex;align-items:center;min-height:44px;margin-top:1
     <a class="btn" href="rsvp.html">RSVP here</a>
   </div>
 </section>
+
+<section class="band" id="game">
+  <div class="card reveal game-seg">
+    <div class="head"><h2 class="script">Callum's Canapés</h2></div>
+    <canvas id="chase" width="220" height="34" role="img" aria-label="Pixel Callum in his tux dancing past the canapés, chased by angry chefs and a waiter"></canvas>
+    <p>Help Callum eat every canapé at the wedding before the kitchen staff catch him. Five rooms, from the kitchen to the dance floor, and one high score table for all the guests.</p>
+    <a class="btn" href="game.html">Play the game</a>
+  </div>
+</section>
 </main>
 
 <footer>
@@ -357,6 +373,43 @@ cards.forEach(c=>wro.observe(c));
 const rv=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');rv.unobserve(e.target)}}),{threshold:.08});
 document.querySelectorAll('.reveal').forEach(el=>rv.observe(el));
 }
+</script>
+<script>
+// Little pixel scene for the game section: chefs chasing Callum past a row of canapés (same art as game.html)
+{const cv=document.getElementById('chase');if(cv){
+const g=cv.getContext('2d'),W=cv.width,H=cv.height;
+const PAL={k:'#3a0f22',K:'#6e3346',s:'#f6c7a1',S:'#e3a47e',h:'#e0702c',H:'#b04e1a',e:'#d4631f',E:'#a9481a',n:'#26336a',w:'#ffffff',W:'#dcd3dc',p:'#e86aa8',P:'#cc2d86',r:'#b0202a',R:'#e0444f',b:'#9a5b2e',g:'#c9ced8',G:'#4f9a4a',y:'#ffd54a',o:'#e9b062',O:'#c47a2c',c:'#ff8f7a',m:'#ffe6f0',B:'#2a2a33',T:'#16161c',d:'#7a3a1a',L:'#8fb8ff',l:'#d6e6ff',x:'#f2f2f2',N:'#18214a'};
+const head=["....hhhhh....","...hhhhhhhh..","..hhhhhhhhhh.","..hHsssssHhh.","..hsssssssh..","..sskssskss..","..Sssssssss..","..eeSsssSee..","..eeerrreee..","...eeeeeee...","....eeeee...."];
+const tux=["..TTTwwwTTT..",".TTTTkwkTTTT.",".TTTTwwwTTpT.",".sTTTTwTTTTs.",".s.TTTTTTT.s."];
+const tl={A:["...TTT.TTT...","...TTT.TTT...","...kkk.kkk..."],B:["...TTT.TTT...","..TTT...TTT..","..kkk...kkk.."],C:["...TTT.TTT...","...TTT..TTT.","...kkk...kkk."],D:["...TTT.TTT...",".TTT..TTT...",".kkk...kkk..."]};
+function armUp(rows,side){const r=rows.map(x=>[...x.padEnd(13,'.')]),c=side>0?12:0,hc=side>0?11:1;
+ r[14][hc]='.';r[15][hc]='.';r[3][c]='s';r[4][c]='s';r[5][c]='w';for(let i=6;i<=12;i++)r[i][c]='T';r[12][hc]='T';return r.map(x=>x.join(''))}
+const SPR={cA:head.concat(tux,tl.A),cB:head.concat(tux,tl.B),cUpR:armUp(head.concat(tux,tl.C),1),cUpL:armUp(head.concat(tux,tl.D),-1),
+ chefA:["...wwwwwww...","..wxwwwxwww..","..wwwwwwwxw..","...wwwwwww...","...WWWWWWW...","..sssssssss..","..skkssskks..","..sskssskss..","..rsssssssr..","..ssskkksss..","...sssssss...",".wwwwwkwwwwwb",".wwwwwwwwwwwb","swwwwwkwwwwsb","..wwwwwwwww.b","...BBB.BBB...","...BBB.BBB...","...kkk.kkk..."],
+ waiterA:["....BBBBB....","...BBBBBBB...","..BBBBBBBBB..","..BsssssssB..","..skkssskks..","..sskssskss..","..rsssssssr..","..sskkkkkss..","...sssssss...","gggggwrkrww..",".s.BBBwBBBB..",".s.BBBwBBBBs.","...BBBwBBBBs.","...BBBBBBBB..","...BBBBBBB...","...BBB.BBB...","...BBB.BBB...","...kkk.kkk..."],
+ volau:["..GyGyG..",".yyyyyyy.","OoooooooO","OoOoOoOoO","OoooooooO",".OOOOOOO."],
+ blini:["...cGc...","..ccccc..",".wwwwwww.","ooooooooo",".OOOOOOO."],
+ burger:["..ooooo..",".ooyoyoo.","ooooooooo","GGGGGGGGG","rrrrrrrrr","ddddddddd","ooooooooo",".OOOOOOO."],
+ sausage:[".oooooooo.","oyoyoyoyoo","oddddddddo","oooooooooo",".OOOOOOOO."],
+};
+SPR.chefB=SPR.chefA.slice(0,15).concat(["...BBB.BBB...","..BBB...BBB..","..kkk...kkk.."]);SPR.waiterB=SPR.waiterA.slice(0,15).concat(["...BBB.BBB...","..BBB...BBB..","..kkk...kkk.."]);
+const cache={};const spr=(n,f)=>{const k=n+(f?'F':'');if(cache[k])return cache[k];const rows=SPR[n],w=Math.max(...rows.map(r=>r.length)),c=document.createElement('canvas');c.width=w;c.height=rows.length;const x=c.getContext('2d');
+ rows.forEach((r,j)=>[...r].forEach((ch,i)=>{if(ch!=='.'&&PAL[ch]){x.fillStyle=PAL[ch];x.fillRect(f?w-1-i:i,j,1,1)}}));return cache[k]=c};
+const put=(n,x,y,f)=>{const s=spr(n,f);g.drawImage(s,Math.round(x-s.width/2),Math.round(y-s.height))};
+const FOOD=['volau','blini','burger','sausage'],DANCE=['cUpR','cB','cUpL','cA'],LOOP=7.5,FX=[40,75,110,145,180];
+const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function frame(t){
+ for(let x=0;x<W;x+=8)for(let y=0;y<H;y+=8){g.fillStyle=((x+y)/8)%2?'#fbe2ee':'#ffffff';g.fillRect(x,y,8,8)}
+ g.fillStyle='#cc2d86';for(let x=0;x<W;x++){const o=Math.round(1+1*Math.sin(x/6));g.fillRect(x,0,1,2+o);g.fillRect(x,H-1-o,1,1+o)}
+ const k=(t%LOOP)/LOOP,cx=W+20-k*(W+130),ground=H-5;
+ FX.forEach((fx,i)=>{if(fx<cx-4){g.fillStyle='rgba(90,22,48,.15)';g.fillRect(fx-4,ground,9,1);put(FOOD[i%4],fx,ground-1+Math.round(Math.sin(t*4+i)))}});
+ put(DANCE[Math.floor(t*7)%4],cx,ground,false);
+ if(Math.floor(t*3)%2){g.fillStyle='#cc2d86';g.fillRect(Math.round(cx)+8,ground-21,2,2);g.fillRect(Math.round(cx)+10,ground-24,1,4)}
+ [['chef',36],['waiter',58],['chef',80]].forEach(([n,gap],i)=>{const x=cx+gap,b=Math.floor(t*8+i)%2;put(n+(b?'B':'A'),x,ground-(b?1:0),true);
+  if(Math.floor(t*4+i)%3===0){g.fillStyle='#e0444f';g.fillRect(Math.round(x)-9,ground-21,2,5);g.fillRect(Math.round(x)-9,ground-14,2,2)}});
+}
+if(still)frame(LOOP*.45);else{const run=n=>{frame(n/1000);requestAnimationFrame(run)};requestAnimationFrame(run)}
+}}
 </script>
 </body>
 </html>
