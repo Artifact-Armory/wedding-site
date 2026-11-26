@@ -158,7 +158,7 @@ ${p.members.map((m,j)=>`<div class="row" style="align-items:end;margin-top:6px">
 <button class="icon" style="margin-top:10px" data-act="gaddm" data-i="${i}">+ Add person</button></div>`).join('')}
 <button class="add" data-add="guests">+ Add a party</button>`};
 
-R_.passwords=()=>`<h2>Passwords</h2><p class="lead">Guests type these on the front page. Capital letters and spaces don't matter. Changing a password doesn't sign out guests who are already in.</p>
+R_.passwords=()=>`<h2>Passwords</h2><p class="lead">Guests type these on the front page. Capital letters don't matter, but spaces do. Changing a password doesn't sign out guests who are already in.</p>
 <div class="item">${field('Day guest password',PW.day,'id="pwday" autocomplete="off"')}${field('Evening guest password',PW.evening,'id="pweve" autocomplete="off"')}
 <button class="btn" style="margin-top:14px" id="savepw">Save passwords</button></div>
 <p class="hint">The admin password is kept in the hosting settings. Ask Claude if you want to change it.</p>`;
