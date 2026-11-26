@@ -390,9 +390,10 @@ const shape=c=>{const W=c.offsetWidth,H=c.offsetHeight;if(!W||!H)return;const m=
 const wro=new ResizeObserver(es=>es.forEach(e=>shape(e.target)));
 cards.forEach(c=>wro.observe(c));
 
-// reveal on scroll
-const rv=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');rv.unobserve(e.target)}}),{threshold:.08});
-document.querySelectorAll('.reveal').forEach(el=>rv.observe(el));
+// reveal on scroll (fades in as soon as the top edge appears, so very tall sections still show).
+// In edit mode everything is shown straight away.
+const rv=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');rv.unobserve(e.target)}}),{threshold:0,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.reveal').forEach(el=>EDIT?el.classList.add('in'):rv.observe(el));
 }
 </script>
 <script>
