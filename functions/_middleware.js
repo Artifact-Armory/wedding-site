@@ -6,7 +6,7 @@ import { loginPage } from "./_login.js";
 import DEFAULT_CONTENT from "./_content.json";
 
 // Change this name to sign everyone out (old sign-ins stop working).
-const COOKIE = "ec_guest_2";
+const COOKIE = "ec_guest_3";
 const MAX_AGE = 60 * 60 * 24 * 365;
 const ROLES = ["day", "evening", "admin"];
 
