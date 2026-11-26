@@ -41,7 +41,7 @@ button:focus-visible{outline:3px solid var(--red);outline-offset:3px}
     <input id="pw" name="password" type="${admin ? "password" : "text"}" autocomplete="off" autocapitalize="none" spellcheck="false" required autofocus>
     <button type="submit">${admin ? "Open admin" : "Come in"}</button>
   </form>
-  ${admin ? '<p class="hint">For Ellie &amp; Callum only.</p>' : '<p class="hint">Capital letters and spaces don\'t matter.</p>'}
+  ${admin ? '<p class="hint">For Ellie &amp; Callum only.</p>' : ''}
 </main>
 <script>
 {const c=document.getElementById('card');

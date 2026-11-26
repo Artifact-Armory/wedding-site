@@ -298,9 +298,9 @@ const EDIT=ROLE==='edit';
 const mine=x=>EDIT||!x.only||x.only===ROLE;
 const box=(title,body,id)=>`<details class="box"${id?` id="${id}"`:''}><summary>${title}<i aria-hidden="true"></i></summary><div class="body">${body}</div></details>`;
 const esc=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
-// Web addresses and emails become tappable. [words](#taxis) links to another part of the page.
-const links=h=>h.replace(/\[([^\]]+)\]\((#[\w-]+)\)|(https?:\/\/[^\s<]+[^\s<.,!?;:)])|([\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g,(m,lt,lh,url,mail)=>
- lt?`<a class="inlink" href="${lh}">${lt}</a>`:url?`<a class="inlink" href="${url}" target="_blank" rel="noopener">${url.replace(/^https?:\/\/(www\.)?/,'')}</a>`:`<a class="inlink" href="mailto:${mail}">${mail}</a>`);
+// Web addresses and emails become tappable. [words](#taxis) links to another part of the page; [words](https://...) opens a website.
+const links=h=>h.replace(/\[([^\]]+)\]\((#[\w-]+|https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s<]+[^\s<.,!?;:)])|([\w.+-]+@[\w-]+(?:\.[\w-]+)+)/g,(m,lt,lh,url,mail)=>
+ lt?`<a class="inlink" href="${lh}"${lh[0]==='#'?'':' target="_blank" rel="noopener"'}>${lt}</a>`:url?`<a class="inlink" href="${url}" target="_blank" rel="noopener">${url.replace(/^https?:\/\/(www\.)?/,'')}</a>`:`<a class="inlink" href="mailto:${mail}">${mail}</a>`);
 const paras=t=>String(t||'').split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>'<p>'+links(esc(x).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>')).replace(/\n/g,'<br>')+'</p>').join('');
 const body=d=>paras(d.text)+(d.phones&&d.phones.length?'<ul class="taxis">'+d.phones.map(x=>`<li><span>${esc(x.name)}</span><a href="tel:${esc(String(x.number).replace(/[^0-9+]/g,''))}">${esc(x.number)}</a></li>`).join('')+'</ul>':'')+(d.map?`<a class="maplink" href="${maps(d.map)}" target="_blank" rel="noopener">${pin}${esc(d.mapLabel||'Open in Google Maps')}</a>`:'');
 // In edit mode (admins only) every piece of text is tagged with where it lives in the content,

@@ -84,7 +84,7 @@
   ],
   "details": [
     {
-      "title": "The Venue",
+      "title": "The venue",
       "text": "The Castle Westenhanger, Stone Street, Westenhanger, Hythe, Kent CT21 4HX.",
       "map": "The Castle Westenhanger, Stone Street, Westenhanger, Hythe CT21 4HX",
       "mapLabel": "Open in Google Maps",
@@ -92,12 +92,12 @@
     },
     {
       "title": "Dress code",
-      "text": "Black Tie optional. Dinner jackets/tuxedos and formal dresses encouraged. Men please wear dark suits. Women, think long dresses with colour welcomed. Please no white, cream or ivory except shirts.",
+      "text": "Black Tie optional. Dark suits welcome. Formal dresses with colour encouraged. Please no white (except shirts!)",
       "only": "day"
     },
     {
       "title": "Food",
-      "text": "Please provide your allergies and dietary requirements when submitting your rsvp. All allergens, vegan and vegetarian will be catered for if details are provided.",
+      "text": "Please provide your allergies and dietary requirements when submitting your rsvp. All allergies, vegan and vegetarian will be catered for if details are provided.",
       "only": "day"
     },
     {
@@ -126,12 +126,22 @@
       "only": "day"
     },
     {
+      "title": "Unplugged ceremony",
+      "text": "Please do not take photos during the ceremony. We have hired a photographer and videographer, so please relax and enjoy the ceremony! Feel free to take photos at any other time during the day!",
+      "only": "day"
+    },
+    {
+      "title": "Photography",
+      "text": "We kindly request that no photos of the bride and groom are shared on social media until they have done so. We would love for you to share your photos with us [here!](https://drive.google.com/drive/folders/1FWzUsw-dS4n63xzXXIf_bM35UOcFBU8e)",
+      "only": "day"
+    },
+    {
       "title": "Good to know",
       "text": "Smoking and vaping is prohibited on site, please use the car park if required.\n\nDue to venue policy, there are no drinks prior to the ceremony.\n\nThe ceremony will start promptly at 1pm. Please arrive at 12.30pm to take your seats.",
       "only": "day"
     },
     {
-      "title": "The Venue",
+      "title": "The venue",
       "text": "The Castle Westenhanger, Stone Street, Westenhanger, Hythe, Kent CT21 4HX.",
       "map": "The Castle Westenhanger, Stone Street, Westenhanger, Hythe CT21 4HX",
       "mapLabel": "Open in Google Maps",
@@ -139,12 +149,12 @@
     },
     {
       "title": "Dress code",
-      "text": "Black Tie optional. Dinner jackets/tuxedos or dark suits welcome. Formal dresses with colour encouraged. Please no white, cream or ivory except shirts.",
+      "text": "Black Tie optional. Dark suits welcome. Formal dresses with colour encouraged. Please no white (except shirts!)",
       "only": "evening"
     },
     {
       "title": "Food",
-      "text": "Please provide your allergies and dietary requirements when submitting your rsvp. All allergens, vegan and vegetarian will be catered for in the evening meal if details are provided.",
+      "text": "Please provide your allergies and dietary requirements when submitting your rsvp. All allergies, vegan and vegetarian will be catered for in the evening meal if details are provided.",
       "only": "evening"
     },
     {
@@ -173,8 +183,13 @@
       "only": "evening"
     },
     {
+      "title": "Photography",
+      "text": "We kindly request that no photos of the bride and groom are shared on social media until they have done so. We would love for you to share your photos with us [here!](https://drive.google.com/drive/folders/1FWzUsw-dS4n63xzXXIf_bM35UOcFBU8e)",
+      "only": "evening"
+    },
+    {
       "title": "Good to know",
-      "text": "Smoking and vaping is prohibited on site, please use the car park if required.\n\nDue to venue policy, there are no drinks prior to the ceremony.",
+      "text": "Smoking and vaping is prohibited on site, please use the car park if required.",
       "only": "evening"
     }
   ],
